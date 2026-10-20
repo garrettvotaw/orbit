@@ -1,0 +1,85 @@
+{
+  "name": "orbit",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/main/main.js",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "icons": "node scripts/make-icons.mjs",
+    "shortcut": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-shortcut.ps1",
+    "build:main": "tsc -p tsconfig.main.json && node -e \"require('fs').copyFileSync('src/main/preload.cjs','dist/main/preload.cjs')\"",
+    "build:renderer": "npm --prefix src/renderer run build -- --base-href ./",
+    "build": "npm run build:main && npm run build:renderer",
+    "start": "npm run build && electron .",
+    "quit": "electron . --quit",
+    "dev:main": "tsc -p tsconfig.main.json -w",
+    "dev:renderer": "npm --prefix src/renderer run watch -- --base-href ./",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.ts src/renderer/src/app/pure/*.test.ts",
+    "db:dump": "node --disable-warning=ExperimentalWarning scripts/db-dump.mjs",
+    "format": "prettier -w . --end-of-line auto",
+    "format:check": "prettier --check . --end-of-line auto",
+    "e2e": "playwright test -c e2e/playwright.config.ts",
+    "dist": "npm run build && electron-builder --win"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.291",
+    "@types/d3-force": "^3.0.10",
+    "d3-force": "^3.0.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^24.19.1",
+    "electron": "44.5.1",
+    "electron-builder": "^26.15.3",
+    "playwright": "^1.63.0",
+    "prettier": "^3.9.9",
+    "typescript": "~5.9.0"
+  },
+  "description": "Desktop home for Claude PM sessions",
+  "license": "MIT",
+  "author": "Garrett Votaw",
+  "build": {
+    "appId": "com.garrettvotaw.orbit",
+    "productName": "Orbit",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "src/renderer/dist/**",
+      "assets/**",
+      "package.json",
+      "!**/*.map"
+    ],
+    "asarUnpack": [
+      "node_modules/@anthropic-ai/claude-agent-sdk-win32-x64/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/orbit.ico",
+      "artifactName": "Orbit-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Orbit",
+      "installerIcon": "assets/orbit.ico",
+      "uninstallerIcon": "assets/orbit.ico",
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

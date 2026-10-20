@@ -1,0 +1,22 @@
+/** The ADO User Story ladder, in board order, with the colour each state has always worn on the ring. */
+export const ADO_PALETTE: ReadonlyArray<{ name: string; color: string }> = [
+  { name: 'New', color: '#64748b' },
+  { name: 'Pre-Refined', color: '#0284c7' },
+  { name: 'Refined', color: '#14b8a6' },
+  { name: 'Active', color: '#2fb344' },
+  { name: 'Pull Request', color: '#a78bfa' },
+  { name: 'Dev Test/Smoke Test', color: '#f97316' },
+  { name: 'Dev Test', color: '#f59e0b' },
+  { name: 'Smoke Test', color: '#fbbf24' },
+  { name: 'Ready for QA', color: '#ec4899' },
+  { name: 'Ready for Testing', color: '#d946ef' },
+  { name: 'QA Test', color: '#a855f7' },
+  { name: 'Ready for STG', color: '#6366f1' },
+  { name: 'UAT/STG', color: '#22d3ee' },
+  { name: 'PO Review', color: '#3b82f6' },
+  { name: 'Ready for Cab', color: '#84cc16' },
+  { name: 'Blocked', color: '#ef4444' },
+  { name: 'On Hold', color: '#78716c' },
+  { name: 'Ready for Prod', color: '#34d399' },
+  { name: 'Testing Complete', color: '#059669' },
+];

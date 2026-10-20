@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="arc" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#4a1fd0"/><stop offset=".6" stop-color="#7c5cff"/><stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="moon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e2d9ff"/><stop offset="1" stop-color="#b19bff"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#2a0f80" flood-opacity=".35"/>
+    </filter>
+  </defs>
+  <path d="M 207.2 114.8 A 82 82 0 1 1 149.2 56.8" fill="none" stroke="url(#arc)" stroke-width="42" stroke-linecap="round"/>
+  <circle cx="196" cy="68" r="28" fill="url(#moon)" filter="url(#shadow)"/>
+</svg>

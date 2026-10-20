@@ -1,0 +1,9 @@
+node_modules/
+dist/
+src/renderer/dist/
+src/renderer/node_modules/
+.superpowers/
+e2e/.tmp/
+test-results/
+release/
+

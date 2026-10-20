@@ -1,0 +1,13 @@
+node_modules/
+dist/
+src/renderer/dist/
+src/renderer/node_modules/
+release/
+test-results/
+e2e/.tmp/
+e2e/fixture-snapshot.json
+package-lock.json
+src/renderer/package-lock.json
+docs/
+*.md
+claude/

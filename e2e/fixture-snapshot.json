@@ -1,0 +1,1590 @@
+{
+  "lanes": [
+    {
+      "id": "shop",
+      "kind": "project",
+      "name": "Storefront",
+      "sessionId": "s1",
+      "status": "working",
+      "model": "fable",
+      "costUsd": 4.12,
+      "startedAt": 1,
+      "lastSummary": "Deriving the board, two lanes building.",
+      "lastReport": {
+        "at": 1,
+        "shipped": [
+          "100180 Product photos #7113",
+          "100181 Gift wrap text #7114"
+        ],
+        "inFlight": [
+          "100189 SKU check"
+        ],
+        "consults": [],
+        "drift": [
+          "100173 Active → Pull Request"
+        ],
+        "blocked": [
+          "100212 needs Billing data on dev"
+        ],
+        "next": "100203 delivery question"
+      },
+      "nextTickAt": null,
+      "error": null,
+      "agents": [
+        {
+          "taskId": "t1",
+          "toolUseId": null,
+          "agentType": "angular",
+          "description": "type change clears steps",
+          "state": "working",
+          "summary": "writing shopper-step.spec",
+          "lastTool": "Edit",
+          "depth": 1,
+          "startedAt": 1,
+          "endedAt": null,
+          "tokens": 1200,
+          "settledTokens": 0
+        },
+        {
+          "taskId": "t2",
+          "toolUseId": null,
+          "agentType": "nestjs",
+          "description": "contact mapper",
+          "state": "working",
+          "summary": "Contacts[] → ContactInfo",
+          "lastTool": "Bash",
+          "depth": 1,
+          "startedAt": 1,
+          "endedAt": null,
+          "tokens": 900,
+          "settledTokens": 0
+        },
+        {
+          "taskId": "t3",
+          "toolUseId": null,
+          "agentType": "debugger",
+          "description": "spec fails under OnPush",
+          "state": "working",
+          "summary": null,
+          "lastTool": "Read",
+          "depth": 2,
+          "startedAt": 1,
+          "endedAt": null,
+          "tokens": 300,
+          "settledTokens": 0
+        }
+      ],
+      "requestedModel": "fable",
+      "feedCount": 0,
+      "pr": null,
+      "bubble": {
+        "kind": "handoff",
+        "text": "type change clears steps",
+        "agentType": "angular",
+        "at": 1
+      },
+      "costInflightUsd": 0.42,
+      "inflightMainUsd": 0.3,
+      "costBasis": "list",
+      "pricedMessageId": null,
+      "reviewPrompt": null
+    },
+    {
+      "id": "cart",
+      "kind": "project",
+      "name": "Cart",
+      "sessionId": "s2",
+      "status": "needs-you",
+      "model": "fable",
+      "costUsd": 1.9,
+      "startedAt": 1,
+      "lastSummary": "The Store form needs a code and the story does not say which.",
+      "lastReport": null,
+      "nextTickAt": null,
+      "agents": [
+        {
+          "taskId": "c1",
+          "toolUseId": null,
+          "agentType": "architect",
+          "description": "shape the Store lookup",
+          "state": "working",
+          "summary": null,
+          "lastTool": "Read",
+          "depth": 1,
+          "startedAt": 1,
+          "endedAt": null,
+          "tokens": 400,
+          "settledTokens": 0
+        }
+      ],
+      "error": null,
+      "requestedModel": null,
+      "feedCount": 0,
+      "pr": null,
+      "bubble": {
+        "kind": "said",
+        "text": "The Store form needs a code and the story does not say which.",
+        "agentType": null,
+        "at": 1
+      },
+      "costInflightUsd": 0,
+      "inflightMainUsd": 0,
+      "costBasis": "list",
+      "pricedMessageId": null,
+      "reviewPrompt": null
+    },
+    {
+      "id": "prs",
+      "kind": "monitor",
+      "name": "PR Monitor",
+      "sessionId": null,
+      "status": "stopped",
+      "model": null,
+      "costUsd": 0,
+      "startedAt": null,
+      "lastSummary": null,
+      "lastReport": null,
+      "nextTickAt": null,
+      "agents": [],
+      "error": null,
+      "requestedModel": null,
+      "feedCount": 0,
+      "pr": null,
+      "bubble": null,
+      "costInflightUsd": 0,
+      "inflightMainUsd": 0,
+      "costBasis": null,
+      "pricedMessageId": null,
+      "reviewPrompt": null
+    },
+    {
+      "id": "ask",
+      "kind": "chat",
+      "name": "Ask Claude",
+      "sessionId": "s9",
+      "status": "idle",
+      "model": "us.anthropic.claude-sonnet-5-5",
+      "requestedModel": "sonnet",
+      "costUsd": 0.12,
+      "startedAt": 1,
+      "lastSummary": null,
+      "lastReport": null,
+      "nextTickAt": null,
+      "agents": [],
+      "feedCount": 3,
+      "error": null,
+      "pr": null,
+      "bubble": null,
+      "costInflightUsd": 0,
+      "inflightMainUsd": 0,
+      "costBasis": "list",
+      "pricedMessageId": null,
+      "reviewPrompt": null
+    },
+    {
+      "id": "review-contoso-storefront-7127",
+      "kind": "review",
+      "name": "#7127 review",
+      "sessionId": "s12",
+      "status": "idle",
+      "model": "us.anthropic.claude-sonnet-5-5",
+      "requestedModel": null,
+      "costUsd": 0.84,
+      "startedAt": 1,
+      "lastSummary": null,
+      "lastReport": null,
+      "nextTickAt": null,
+      "agents": [],
+      "feedCount": 4,
+      "pr": {
+        "number": 7127,
+        "url": "https://github.com/contoso/storefront/pull/7127"
+      },
+      "error": null,
+      "bubble": null,
+      "costInflightUsd": 0,
+      "inflightMainUsd": 0,
+      "costBasis": "list",
+      "pricedMessageId": null,
+      "reviewPrompt": {
+        "findings": [
+          {
+            "n": 1,
+            "severity": "major",
+            "file": "libs/storefront/server/api-cart/src/lib/cart.controller.ts",
+            "line": 48,
+            "gist": "The flag check runs after the ERP call, so a disabled release still hits ERP."
+          },
+          {
+            "n": 2,
+            "severity": "minor",
+            "file": "libs/storefront/client/feature-cart/src/lib/return.component.ts",
+            "line": 112,
+            "gist": "This subscribe() has no takeUntilDestroyed."
+          },
+          {
+            "n": 3,
+            "severity": "suggestion",
+            "file": "libs/storefront/client/feature-cart/src/lib/parts/part-3.component.ts",
+            "line": 21,
+            "gist": "Could reuse the shared mapper here instead of mapping fields by hand (3)."
+          },
+          {
+            "n": 4,
+            "severity": "suggestion",
+            "file": "libs/storefront/client/feature-cart/src/lib/parts/part-4.component.ts",
+            "line": 28,
+            "gist": "Could reuse the shared mapper here instead of mapping fields by hand (4)."
+          },
+          {
+            "n": 5,
+            "severity": "suggestion",
+            "file": "libs/storefront/client/feature-cart/src/lib/parts/part-5.component.ts",
+            "line": 35,
+            "gist": "Could reuse the shared mapper here instead of mapping fields by hand (5)."
+          },
+          {
+            "n": 6,
+            "severity": "suggestion",
+            "file": "libs/storefront/client/feature-cart/src/lib/parts/part-6.component.ts",
+            "line": 42,
+            "gist": "Could reuse the shared mapper here instead of mapping fields by hand (6)."
+          },
+          {
+            "n": 7,
+            "severity": "suggestion",
+            "file": "libs/storefront/client/feature-cart/src/lib/parts/part-7.component.ts",
+            "line": 49,
+            "gist": "Could reuse the shared mapper here instead of mapping fields by hand (7)."
+          },
+          {
+            "n": 8,
+            "severity": "suggestion",
+            "file": "libs/storefront/client/feature-cart/src/lib/parts/part-8.component.ts",
+            "line": 56,
+            "gist": "Could reuse the shared mapper here instead of mapping fields by hand (8)."
+          },
+          {
+            "n": 9,
+            "severity": "suggestion",
+            "file": "libs/storefront/client/feature-cart/src/lib/parts/part-9.component.ts",
+            "line": 63,
+            "gist": "Could reuse the shared mapper here instead of mapping fields by hand (9)."
+          },
+          {
+            "n": 10,
+            "severity": "suggestion",
+            "file": "libs/storefront/client/feature-cart/src/lib/parts/part-10.component.ts",
+            "line": 70,
+            "gist": "Could reuse the shared mapper here instead of mapping fields by hand (10)."
+          },
+          {
+            "n": 11,
+            "severity": "suggestion",
+            "file": "libs/storefront/client/feature-cart/src/lib/parts/part-11.component.ts",
+            "line": 77,
+            "gist": "Could reuse the shared mapper here instead of mapping fields by hand (11)."
+          },
+          {
+            "n": 12,
+            "severity": "suggestion",
+            "file": "libs/storefront/client/feature-cart/src/lib/parts/part-12.component.ts",
+            "line": 84,
+            "gist": "Could reuse the shared mapper here instead of mapping fields by hand (12)."
+          }
+        ]
+      }
+    },
+    {
+      "id": "store",
+      "kind": "project",
+      "name": "Store Returns",
+      "sessionId": "s-store",
+      "status": "idle",
+      "model": "fable",
+      "costUsd": 2.31,
+      "startedAt": 1,
+      "lastSummary": "Which should the delivery form send?",
+      "lastReport": null,
+      "nextTickAt": null,
+      "error": null,
+      "agents": [],
+      "requestedModel": null,
+      "feedCount": 3,
+      "pr": null,
+      "bubble": null,
+      "costInflightUsd": 0,
+      "inflightMainUsd": 0,
+      "costBasis": "list",
+      "pricedMessageId": null,
+      "reviewPrompt": null
+    },
+    {
+      "kind": "story",
+      "sessionId": "s9",
+      "model": "sonnet",
+      "requestedModel": "sonnet",
+      "costInflightUsd": 0.18,
+      "inflightMainUsd": 0,
+      "costBasis": "list",
+      "pricedMessageId": null,
+      "lastSummary": "Architect split done; angular lane on the review step.",
+      "bubble": null,
+      "lastReport": null,
+      "nextTickAt": null,
+      "feedCount": 0,
+      "pr": null,
+      "error": null,
+      "parentId": "shop",
+      "id": "story-shop-100203",
+      "name": "100203 · Delivery question in the review step",
+      "status": "working",
+      "costUsd": 1.27,
+      "startedAt": 1,
+      "agents": [
+        {
+          "taskId": "m1",
+          "toolUseId": null,
+          "agentType": "angular",
+          "description": "delivery question control",
+          "state": "working",
+          "summary": "wiring the radio group",
+          "lastTool": "Edit",
+          "depth": 1,
+          "startedAt": 1,
+          "endedAt": null,
+          "tokens": 400,
+          "settledTokens": 0
+        },
+        {
+          "taskId": "m2",
+          "toolUseId": null,
+          "agentType": "architect",
+          "description": "lane split",
+          "state": "done",
+          "summary": "client only",
+          "lastTool": null,
+          "depth": 1,
+          "startedAt": 1,
+          "endedAt": 1,
+          "tokens": 300,
+          "settledTokens": 300
+        }
+      ],
+      "story": {
+        "storyId": "100203",
+        "title": "Delivery question in the review step",
+        "stage": "building",
+        "pr": null,
+        "prUrl": null,
+        "files": [
+          "libs/storefront/client/feature-checkout/src/lib/steps/review-step/review-step.component.ts",
+          "libs/storefront/client/feature-checkout/src/lib/steps/review-step/review-step.component.spec.ts"
+        ],
+        "summary": "Consults done: client only, no ERP change. Lanes starting.",
+        "worktree": "C:\\src\\wo-100203",
+        "branch": "users/pdoe/100203-delivery-question"
+      },
+      "reviewPrompt": null
+    },
+    {
+      "kind": "story",
+      "sessionId": "s10",
+      "model": "sonnet",
+      "requestedModel": "sonnet",
+      "costInflightUsd": 0,
+      "inflightMainUsd": 0,
+      "costBasis": "list",
+      "pricedMessageId": null,
+      "lastSummary": "PR #7123 opened; gates green.",
+      "bubble": null,
+      "lastReport": null,
+      "nextTickAt": null,
+      "feedCount": 0,
+      "pr": null,
+      "error": null,
+      "parentId": "shop",
+      "id": "story-shop-100204",
+      "name": "100204 · Shopper N/A keeps the gift note hidden",
+      "status": "idle",
+      "costUsd": 2.05,
+      "startedAt": 1,
+      "agents": [],
+      "story": {
+        "storyId": "100204",
+        "title": "Shopper N/A keeps the gift note hidden",
+        "stage": "pr-opened",
+        "pr": 7123,
+        "prUrl": "https://github.com/contoso/storefront/pull/7123",
+        "files": [
+          "libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/shopper-step.component.ts"
+        ],
+        "summary": "Opened PR #7123 with the AC table. CI not watched.",
+        "worktree": "C:\\src\\wo-100204",
+        "branch": "users/pdoe/100204-shopper-na"
+      },
+      "reviewPrompt": null
+    }
+  ],
+  "attention": [
+    {
+      "id": "a1",
+      "laneId": "cart",
+      "kind": "question",
+      "raisedAt": 1,
+      "toolUseId": "tu1",
+      "why": "The Store form needs a code and the story does not say which.",
+      "questions": [
+        {
+          "question": "Which Store code should the form send?",
+          "header": "Store code",
+          "multiSelect": false,
+          "options": [
+            {
+              "label": "StoreCode",
+              "description": "5-char store code",
+              "preview": "<StoreForm>\n  <StoreCode>00123</StoreCode>\n</StoreForm>"
+            },
+            {
+              "label": "BranchCode",
+              "description": "ERP site number"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "laneId": "store",
+      "kind": "blocked",
+      "raisedAt": 1001,
+      "story": "your answer",
+      "decision": "Which should the delivery form send?",
+      "text": "Which should the delivery form send?",
+      "options": [
+        {
+          "label": "StoreCode",
+          "reply": "StoreCode"
+        },
+        {
+          "label": "BranchCode",
+          "reply": "BranchCode"
+        },
+        {
+          "label": "Ask the PO and park the story",
+          "reply": "Ask the PO and park the story"
+        }
+      ]
+    }
+  ],
+  "boards": [
+    {
+      "projectId": "shop",
+      "tracker": {
+        "kind": "ado",
+        "site": "contoso"
+      },
+      "fetchedAt": 1,
+      "columns": [
+        {
+          "name": "New",
+          "stage": "not-started",
+          "color": "#64748b"
+        },
+        {
+          "name": "Proposed",
+          "stage": "building",
+          "color": "#0284c7"
+        },
+        {
+          "name": "Ready",
+          "stage": "building",
+          "color": "#14b8a6"
+        },
+        {
+          "name": "Active",
+          "stage": "building",
+          "color": "#2fb344"
+        },
+        {
+          "name": "Pull Request",
+          "stage": "in-review",
+          "color": "#a78bfa"
+        },
+        {
+          "name": "QA/Staging",
+          "stage": "testing",
+          "color": "#f97316"
+        },
+        {
+          "name": "QA",
+          "stage": "testing",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "Staging",
+          "stage": "testing",
+          "color": "#fbbf24"
+        },
+        {
+          "name": "Ready to Test",
+          "stage": "testing",
+          "color": "#ec4899"
+        },
+        {
+          "name": "Ready to Verify",
+          "stage": "testing",
+          "color": "#d946ef"
+        },
+        {
+          "name": "Verifying",
+          "stage": "testing",
+          "color": "#a855f7"
+        },
+        {
+          "name": "Ready to Stage",
+          "stage": "building",
+          "color": "#6366f1"
+        },
+        {
+          "name": "Acceptance",
+          "stage": "building",
+          "color": "#22d3ee"
+        },
+        {
+          "name": "Owner Review",
+          "stage": "in-review",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "Ready to Release",
+          "stage": "building",
+          "color": "#84cc16"
+        },
+        {
+          "name": "Blocked",
+          "stage": "blocked",
+          "color": "#ef4444"
+        },
+        {
+          "name": "On Hold",
+          "stage": "blocked",
+          "color": "#78716c"
+        },
+        {
+          "name": "Ready to Ship",
+          "stage": "building",
+          "color": "#34d399"
+        },
+        {
+          "name": "Verified",
+          "stage": "testing",
+          "color": "#059669"
+        }
+      ],
+      "items": [
+        {
+          "id": "100203",
+          "key": "100203",
+          "title": "Delivery question on the review step",
+          "type": "User Story",
+          "column": "New",
+          "stage": "not-started",
+          "assignedTo": "Pat Doe",
+          "parentId": "100100",
+          "prs": [],
+          "url": "https://dev.azure.com/contoso/Storefront/_workitems/edit/100203",
+          "sprint": null
+        },
+        {
+          "id": "100204",
+          "key": "100204",
+          "title": "Shopper N/A keeps the gift note hidden",
+          "type": "Bug",
+          "column": "New",
+          "stage": "not-started",
+          "assignedTo": "Pat Doe",
+          "parentId": "100100",
+          "prs": [],
+          "url": "https://dev.azure.com/contoso/Storefront/_workitems/edit/100204",
+          "sprint": null
+        },
+        {
+          "id": "100189",
+          "key": "100189",
+          "title": "Edit product checks the SKU against ERP",
+          "type": "User Story",
+          "column": "Active",
+          "stage": "building",
+          "assignedTo": "Pat Doe",
+          "parentId": "100100",
+          "prs": [],
+          "url": "https://dev.azure.com/contoso/Storefront/_workitems/edit/100189",
+          "sprint": null
+        },
+        {
+          "id": "100212",
+          "key": "100212",
+          "title": "Business account billing contact goes out as billingContact",
+          "type": "Bug",
+          "column": "Active",
+          "stage": "building",
+          "assignedTo": "Pat Doe",
+          "parentId": "100100",
+          "prs": [],
+          "url": "https://dev.azure.com/contoso/Storefront/_workitems/edit/100212",
+          "sprint": null
+        },
+        {
+          "id": "100180",
+          "key": "100180",
+          "title": "Blank subscription shows customer profile pics",
+          "type": "Bug",
+          "column": "Pull Request",
+          "stage": "in-review",
+          "assignedTo": "Pat Doe",
+          "parentId": "100100",
+          "prs": [
+            {
+              "repo": null,
+              "number": 7113
+            }
+          ],
+          "url": "https://dev.azure.com/contoso/Storefront/_workitems/edit/100180",
+          "sprint": null
+        },
+        {
+          "id": "100181",
+          "key": "100181",
+          "title": "Gift wrap text positions",
+          "type": "User Story",
+          "column": "Pull Request",
+          "stage": "in-review",
+          "assignedTo": "Pat Doe",
+          "parentId": "100100",
+          "prs": [
+            {
+              "repo": null,
+              "number": 7114
+            }
+          ],
+          "url": "https://dev.azure.com/contoso/Storefront/_workitems/edit/100181",
+          "sprint": null
+        },
+        {
+          "id": "100188",
+          "key": "100188",
+          "title": "Bundle-only visit seeds the bundle",
+          "type": "User Story",
+          "column": "Pull Request",
+          "stage": "in-review",
+          "assignedTo": "Pat Doe",
+          "parentId": "100100",
+          "prs": [
+            {
+              "repo": null,
+              "number": 7117
+            }
+          ],
+          "url": "https://dev.azure.com/contoso/Storefront/_workitems/edit/100188",
+          "sprint": null
+        },
+        {
+          "id": "100143",
+          "key": "100143",
+          "title": "Request picker lists exactly what legacy lists",
+          "type": "User Story",
+          "column": "Owner Review",
+          "stage": "in-review",
+          "assignedTo": "Pat Doe",
+          "parentId": "100100",
+          "prs": [
+            {
+              "repo": null,
+              "number": 7104
+            }
+          ],
+          "url": "https://dev.azure.com/contoso/Storefront/_workitems/edit/100143",
+          "sprint": null
+        }
+      ],
+      "stale": false,
+      "error": null
+    },
+    {
+      "projectId": "cart",
+      "tracker": {
+        "kind": "ado",
+        "site": "contoso"
+      },
+      "fetchedAt": 1,
+      "columns": [
+        {
+          "name": "New",
+          "stage": "not-started",
+          "color": "#64748b"
+        },
+        {
+          "name": "Proposed",
+          "stage": "building",
+          "color": "#0284c7"
+        },
+        {
+          "name": "Ready",
+          "stage": "building",
+          "color": "#14b8a6"
+        },
+        {
+          "name": "Active",
+          "stage": "building",
+          "color": "#2fb344"
+        },
+        {
+          "name": "Pull Request",
+          "stage": "in-review",
+          "color": "#a78bfa"
+        },
+        {
+          "name": "QA/Staging",
+          "stage": "testing",
+          "color": "#f97316"
+        },
+        {
+          "name": "QA",
+          "stage": "testing",
+          "color": "#f59e0b"
+        },
+        {
+          "name": "Staging",
+          "stage": "testing",
+          "color": "#fbbf24"
+        },
+        {
+          "name": "Ready to Test",
+          "stage": "testing",
+          "color": "#ec4899"
+        },
+        {
+          "name": "Ready to Verify",
+          "stage": "testing",
+          "color": "#d946ef"
+        },
+        {
+          "name": "Verifying",
+          "stage": "testing",
+          "color": "#a855f7"
+        },
+        {
+          "name": "Ready to Stage",
+          "stage": "building",
+          "color": "#6366f1"
+        },
+        {
+          "name": "Acceptance",
+          "stage": "building",
+          "color": "#22d3ee"
+        },
+        {
+          "name": "Owner Review",
+          "stage": "in-review",
+          "color": "#3b82f6"
+        },
+        {
+          "name": "Ready to Release",
+          "stage": "building",
+          "color": "#84cc16"
+        },
+        {
+          "name": "Blocked",
+          "stage": "blocked",
+          "color": "#ef4444"
+        },
+        {
+          "name": "On Hold",
+          "stage": "blocked",
+          "color": "#78716c"
+        },
+        {
+          "name": "Ready to Ship",
+          "stage": "building",
+          "color": "#34d399"
+        },
+        {
+          "name": "Verified",
+          "stage": "testing",
+          "color": "#059669"
+        }
+      ],
+      "items": [
+        {
+          "id": "100107",
+          "key": "100107",
+          "title": "Store cart list pages at 25 rows",
+          "type": "User Story",
+          "column": "Active",
+          "stage": "building",
+          "assignedTo": "Pat Doe",
+          "parentId": "100100",
+          "prs": [],
+          "url": "https://dev.azure.com/contoso/Storefront/_workitems/edit/100107",
+          "sprint": null
+        }
+      ],
+      "stale": true,
+      "error": "ADO 401: token rejected"
+    }
+  ],
+  "prBoards": [
+    {
+      "monitorId": "prs",
+      "fetchedAt": 1,
+      "repo": "contoso/storefront",
+      "lanes": [
+        {
+          "number": 7117,
+          "title": "Bundle-only visit seeds bundle",
+          "story": "AB#100188",
+          "bucket": "fixing",
+          "status": "fixer mid-edit",
+          "note": "Server fix done locally (wo-copy-draft.mapper), blocked on Pat A/B/C for the client hydrate. Tick 1154: #7117 server fix done locally, blocked on Pat A/B/C. Tick 1155: Pat picked C; fixer resumed on the wizard copy-draft seeding, mid-edit on wizard-state. blocked on A/B/C",
+          "url": "https://github.com/contoso/storefront/pull/7117",
+          "stages": {
+            "ci": {
+              "state": "bad",
+              "label": "unit tests red"
+            },
+            "review": {
+              "state": "pending",
+              "label": "no review yet"
+            },
+            "conflicts": {
+              "state": "good",
+              "label": "clean"
+            },
+            "merge": {
+              "state": "pending",
+              "label": ""
+            }
+          }
+        },
+        {
+          "number": 7115,
+          "title": "Edit product ERP SKU check",
+          "story": "AB#100188",
+          "bucket": "waiting",
+          "status": "green, waiting on team",
+          "note": null,
+          "url": "https://github.com/contoso/storefront/pull/7115",
+          "stages": {
+            "ci": {
+              "state": "good",
+              "label": "8/8 required"
+            },
+            "review": {
+              "state": "busy",
+              "label": "waiting on markyd"
+            },
+            "conflicts": {
+              "state": "good",
+              "label": "clean"
+            },
+            "merge": {
+              "state": "pending",
+              "label": ""
+            }
+          }
+        },
+        {
+          "number": 7120,
+          "title": "Business account billing contact",
+          "story": "AB#100188",
+          "bucket": "waiting",
+          "status": "green, waiting on team",
+          "note": null,
+          "url": "https://github.com/contoso/storefront/pull/7120",
+          "stages": {
+            "ci": {
+              "state": "good",
+              "label": "8/8 required"
+            },
+            "review": {
+              "state": "good",
+              "label": "markyd approved"
+            },
+            "conflicts": {
+              "state": "good",
+              "label": "clean"
+            },
+            "merge": {
+              "state": "good",
+              "label": "ready"
+            }
+          }
+        },
+        {
+          "number": 7101,
+          "title": "Size chart",
+          "story": "AB#100188",
+          "bucket": "merged",
+          "status": "merged by Pat",
+          "note": null,
+          "url": "https://github.com/contoso/storefront/pull/7101",
+          "stages": {
+            "ci": {
+              "state": "good",
+              "label": "8/8"
+            }
+          }
+        }
+      ],
+      "activity": [
+        {
+          "at": 1,
+          "text": "Tick 1155: no change. #7117 fixer mid-edit on wizard-state."
+        }
+      ]
+    }
+  ],
+  "feeds": {
+    "shop:pm": [
+      {
+        "kind": "user",
+        "text": "Run the Shop board.",
+        "tool": null
+      },
+      {
+        "kind": "text",
+        "text": "Deriving the board from ADO, GitHub, and main.",
+        "tool": null
+      },
+      {
+        "kind": "tool",
+        "text": "Bash gh pr list --author @me --state open",
+        "tool": "Bash"
+      },
+      {
+        "kind": "result",
+        "text": "#7113 #7114 #7115 #7117 #7120",
+        "tool": "Bash"
+      }
+    ],
+    "shop:t1": [
+      {
+        "kind": "text",
+        "text": "Writing the failing spec first.",
+        "tool": null
+      },
+      {
+        "kind": "tool",
+        "text": "Edit shopper-step.spec.ts",
+        "tool": "Edit"
+      },
+      {
+        "kind": "tool",
+        "text": "Bash npx nx test checkout",
+        "tool": "Bash"
+      },
+      {
+        "kind": "result",
+        "text": "Tests: 1 failed, 123 passed",
+        "tool": "Bash"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-1.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-2.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-3.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-4.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-5.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-6.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-7.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-8.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-9.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-10.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-11.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-12.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-13.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-14.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-15.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-16.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-17.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-18.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-19.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-20.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-21.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-22.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-23.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-24.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-25.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-26.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-27.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-28.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-29.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-30.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-31.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-32.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-33.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-34.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-35.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-36.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-37.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-38.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-39.ts",
+        "tool": "Read"
+      },
+      {
+        "kind": "tool",
+        "text": "Read libs/storefront/client/feature-checkout/src/lib/steps/shopper-step/part-40.ts",
+        "tool": "Read"
+      }
+    ],
+    "ask:pm": [
+      {
+        "kind": "user",
+        "text": "What does the cart grid page size default to?",
+        "tool": null
+      },
+      {
+        "kind": "tool",
+        "text": "Grep pageSize in libs",
+        "tool": "Grep"
+      },
+      {
+        "kind": "text",
+        "text": "It defaults to **25 rows** for Store users and 50 for stores.\n\n- Store: `DEFAULT_PAGE_SIZE = 25`\n- Store: `STORE_PAGE_SIZE = 50`\n\nSet in [cart-grid.config.ts](https://github.com/contoso/storefront/blob/main/libs/cart-grid.config.ts).",
+        "tool": null
+      }
+    ],
+    "review-contoso-storefront-7127:pm": [
+      {
+        "kind": "user",
+        "text": "/review-pr 7127",
+        "tool": null
+      },
+      {
+        "kind": "tool",
+        "text": "Bash gh pr view 7127 --json title,body,author",
+        "tool": "Bash"
+      },
+      {
+        "kind": "tool",
+        "text": "Bash gh pr diff 7127",
+        "tool": "Bash"
+      },
+      {
+        "kind": "text",
+        "text": "## PR #7127 Review - 12 comments\n\n1. **[major]** `libs/storefront/server/api-cart/src/lib/cart.controller.ts:48`\n   The flag check runs after the ERP call, so a disabled release still hits ERP.\n\n2. **[minor]** `libs/storefront/client/feature-cart/src/lib/return.component.ts:112`\n   This subscribe() has no takeUntilDestroyed.\n\n\n3. **[suggestion]** `libs/storefront/client/feature-cart/src/lib/parts/part-3.component.ts:21`\n   Could reuse the shared mapper here instead of mapping fields by hand (3).\n\n4. **[suggestion]** `libs/storefront/client/feature-cart/src/lib/parts/part-4.component.ts:28`\n   Could reuse the shared mapper here instead of mapping fields by hand (4).\n\n5. **[suggestion]** `libs/storefront/client/feature-cart/src/lib/parts/part-5.component.ts:35`\n   Could reuse the shared mapper here instead of mapping fields by hand (5).\n\n6. **[suggestion]** `libs/storefront/client/feature-cart/src/lib/parts/part-6.component.ts:42`\n   Could reuse the shared mapper here instead of mapping fields by hand (6).\n\n7. **[suggestion]** `libs/storefront/client/feature-cart/src/lib/parts/part-7.component.ts:49`\n   Could reuse the shared mapper here instead of mapping fields by hand (7).\n\n8. **[suggestion]** `libs/storefront/client/feature-cart/src/lib/parts/part-8.component.ts:56`\n   Could reuse the shared mapper here instead of mapping fields by hand (8).\n\n9. **[suggestion]** `libs/storefront/client/feature-cart/src/lib/parts/part-9.component.ts:63`\n   Could reuse the shared mapper here instead of mapping fields by hand (9).\n\n10. **[suggestion]** `libs/storefront/client/feature-cart/src/lib/parts/part-10.component.ts:70`\n   Could reuse the shared mapper here instead of mapping fields by hand (10).\n\n11. **[suggestion]** `libs/storefront/client/feature-cart/src/lib/parts/part-11.component.ts:77`\n   Could reuse the shared mapper here instead of mapping fields by hand (11).\n\n12. **[suggestion]** `libs/storefront/client/feature-cart/src/lib/parts/part-12.component.ts:84`\n   Could reuse the shared mapper here instead of mapping fields by hand (12).\n\nRemove any comments by number (e.g. \"2, 4\"), or hit Enter to post all.",
+        "tool": null
+      }
+    ],
+    "store:pm": [
+      {
+        "kind": "user",
+        "text": "Run the Store board.",
+        "tool": null
+      },
+      {
+        "kind": "tool",
+        "text": "Read 100203.md",
+        "tool": "Read"
+      },
+      {
+        "kind": "text",
+        "text": "100203 asks for a Store code on the delivery form and the story does not say which field it means.\n\nWhich should the delivery form send?\n\n1. **StoreCode** — the 5-char store code the old form used\n2. **BranchCode** — the ERP site number the API expects\n3. Ask the PO and park the story",
+        "tool": null
+      }
+    ],
+    "story-shop-100203:pm": [
+      {
+        "kind": "user",
+        "text": "You are the story manager for ADO story 100203: Delivery question in the review step.",
+        "tool": null
+      },
+      {
+        "kind": "text",
+        "text": "Consults back. Claiming the review-step files and starting the angular lane.",
+        "tool": null
+      },
+      {
+        "kind": "tool",
+        "text": "{\"paths\":[\"libs/storefront/client/feature-checkout/src/lib/steps/review-step/review-step.component.ts\"]}",
+        "tool": "mcp__orbit__claim_files"
+      }
+    ],
+    "story-shop-100204:pm": [
+      {
+        "kind": "text",
+        "text": "Opened PR #7123. Reporting pr-opened and ending my turn.",
+        "tool": null
+      }
+    ]
+  },
+  "agents": [
+    {
+      "name": "cart-pm",
+      "description": "Runs the cart board",
+      "source": "user"
+    },
+    {
+      "name": "shop-pm",
+      "description": "Runs the Shop board",
+      "source": "user"
+    }
+  ],
+  "models": [
+    {
+      "value": "fable",
+      "label": "fable (alias)"
+    },
+    {
+      "value": "sonnet",
+      "label": "sonnet (alias)"
+    },
+    {
+      "value": "us.anthropic.claude-sonnet-5-5",
+      "label": "us.anthropic.claude-sonnet-5-5 (sonnet)"
+    }
+  ],
+  "teamPrs": {
+    "repos": [
+      "contoso/storefront"
+    ],
+    "fetchedAt": 1791318873788,
+    "prs": [
+      {
+        "repo": "contoso/storefront",
+        "number": 7116,
+        "title": "Edit product hides the SKU error toast after a successful search",
+        "author": "markyd",
+        "url": "https://github.com/contoso/storefront/pull/7116",
+        "branch": "users/markyd/7116",
+        "updatedAt": 1791313473813,
+        "decision": "changes-requested",
+        "checks": "failure",
+        "requested": "you",
+        "additions": 58,
+        "deletions": 6
+      },
+      {
+        "repo": "contoso/storefront",
+        "number": 7127,
+        "title": "AB#100136 gate cart return behind release-cart-return",
+        "author": "dustinbrantley",
+        "url": "https://github.com/contoso/storefront/pull/7127",
+        "branch": "users/dustinbrantley/7127",
+        "updatedAt": 1791318153816,
+        "decision": "review-required",
+        "checks": "pending",
+        "requested": "team",
+        "additions": 58,
+        "deletions": 6
+      },
+      {
+        "repo": "contoso/storefront",
+        "number": 7110,
+        "title": "Shipping label sync retries on 503",
+        "author": "kspencer",
+        "url": "https://github.com/contoso/storefront/pull/7110",
+        "branch": "users/kspencer/7110",
+        "updatedAt": 1791300873816,
+        "decision": "approved",
+        "checks": "success",
+        "requested": null,
+        "additions": 58,
+        "deletions": 6
+      }
+    ],
+    "error": null
+  },
+  "agentColors": {
+    "debugger": "#facc15"
+  },
+  "spentTodayUsd": 12.4,
+  "decisions": [
+    {
+      "id": "d1",
+      "n": 1,
+      "laneId": "shop",
+      "laneName": "Storefront",
+      "question": "When a shopper picks up an order at a store, which store should the paperwork show?",
+      "today": "The old app prints the store where the orders were picked up.",
+      "proposed": "Show the store that placed the order instead.",
+      "options": [
+        "The delivery store",
+        "The ordering store"
+      ],
+      "story": "100203",
+      "askedAt": 1791462122502,
+      "status": "open",
+      "answer": null,
+      "answeredAt": null,
+      "deliveredAt": null,
+      "sentAt": null
+    },
+    {
+      "id": "d2",
+      "n": 2,
+      "laneId": "shop",
+      "laneName": "Storefront",
+      "question": "Should the new form remember the last store a user picked?",
+      "today": "The old app starts blank every time.",
+      "proposed": null,
+      "options": [],
+      "story": null,
+      "askedAt": 1791379322502,
+      "status": "open",
+      "answer": null,
+      "answeredAt": null,
+      "deliveredAt": null,
+      "sentAt": 1791465722502
+    },
+    {
+      "id": "d3",
+      "n": 3,
+      "laneId": "cart",
+      "laneName": "Cart",
+      "question": "Can a cart with no tag be taken in at the door?",
+      "today": "The old app refuses it and the shopper has to come back.",
+      "proposed": "Take it in and flag it for a tag later.",
+      "options": [
+        "Take it in",
+        "Refuse it"
+      ],
+      "story": "100136",
+      "askedAt": 1791470522502,
+      "status": "open",
+      "answer": null,
+      "answeredAt": null,
+      "deliveredAt": null,
+      "sentAt": null
+    },
+    {
+      "id": "dq-moon",
+      "n": 9,
+      "laneId": "story-shop-100203",
+      "laneName": "100203 · Delivery question in the review step",
+      "question": "If the shopper skips the delivery question, should the review step still let them finish?",
+      "today": "The old app lets them finish and leaves the answer blank.",
+      "proposed": "Let them finish, and show a note that it was skipped.",
+      "options": [
+        "Let them finish",
+        "Make them answer"
+      ],
+      "story": "100203",
+      "askedAt": 1791551153572,
+      "status": "open",
+      "answer": null,
+      "answeredAt": null,
+      "deliveredAt": null,
+      "sentAt": null
+    },
+    {
+      "id": "d4",
+      "n": 4,
+      "laneId": "shop",
+      "laneName": "Storefront",
+      "question": "Does a guest customer need a phone number to book?",
+      "today": "The old app lets a guest book with just a name.",
+      "proposed": null,
+      "options": [
+        "Name only",
+        "Name and phone"
+      ],
+      "story": "100196",
+      "askedAt": 1791300122502,
+      "status": "answered",
+      "answer": "Name only.",
+      "answeredAt": 1791469322502,
+      "deliveredAt": null,
+      "sentAt": null
+    }
+  ],
+  "stars": [
+    {
+      "id": "shop-pr-7123",
+      "pmId": "shop",
+      "storyId": "100114",
+      "title": "Product step remembers the unit",
+      "pr": 7123,
+      "prUrl": "https://github.com/contoso/storefront/pull/7123",
+      "sprint": "Storefront\\Sprint 40",
+      "at": 1790866800000
+    },
+    {
+      "id": "shop-pr-7130",
+      "pmId": "shop",
+      "storyId": "100115",
+      "title": "Customer search by PO",
+      "pr": 7130,
+      "prUrl": "https://github.com/contoso/storefront/pull/7130",
+      "sprint": "Storefront\\Sprint 40",
+      "at": 1790953200000
+    },
+    {
+      "id": "shop-pr-7635",
+      "pmId": "shop",
+      "storyId": "100233",
+      "title": "Coupon pick before save",
+      "pr": 7635,
+      "prUrl": "https://github.com/contoso/storefront/pull/7635",
+      "sprint": "Storefront\\Sprint 41",
+      "at": 1791298800000
+    },
+    {
+      "id": "shop-pr-7144",
+      "pmId": "shop",
+      "storyId": "100234",
+      "title": "Gift box needs a coupon",
+      "pr": 7144,
+      "prUrl": "https://github.com/contoso/storefront/pull/7144",
+      "sprint": "Storefront\\Sprint 41",
+      "at": 1791385200000
+    },
+    {
+      "id": "shop-pr-7147",
+      "pmId": "shop",
+      "storyId": "100150",
+      "title": "Size options on paired items",
+      "pr": 7147,
+      "prUrl": "https://github.com/contoso/storefront/pull/7147",
+      "sprint": "Storefront\\Sprint 41",
+      "at": 1791471600000
+    },
+    {
+      "id": "shop-pr-7151",
+      "pmId": "shop",
+      "storyId": "100166",
+      "title": "Review step shows the subscription",
+      "pr": 7151,
+      "prUrl": "https://github.com/contoso/storefront/pull/7151",
+      "sprint": "Storefront\\Sprint 41",
+      "at": 1791558000000
+    },
+    {
+      "id": "shop-pr-7154",
+      "pmId": "shop",
+      "storyId": "100203",
+      "title": "Delivery question in the review step",
+      "pr": 7154,
+      "prUrl": "https://github.com/contoso/storefront/pull/7154",
+      "sprint": "Storefront\\Sprint 41",
+      "at": 1791817200000
+    },
+    {
+      "id": "cart-pr-7139",
+      "pmId": "cart",
+      "storyId": "100219",
+      "title": "Store failure and navigation polish",
+      "pr": 7139,
+      "prUrl": "https://github.com/contoso/storefront/pull/7139",
+      "sprint": "Storefront\\Sprint 41",
+      "at": 1791385200000
+    },
+    {
+      "id": "cart-pr-7142",
+      "pmId": "cart",
+      "storyId": "100226",
+      "title": "Cart return reasons",
+      "pr": 7142,
+      "prUrl": "https://github.com/contoso/storefront/pull/7142",
+      "sprint": "Storefront\\Sprint 41",
+      "at": 1791644400000
+    }
+  ],
+  "sprints": {
+    "shop": {
+      "current": {
+        "name": "Sprint 41 (10.6 - 10.20)",
+        "path": "Storefront\\Sprint 41",
+        "start": 1791262800000,
+        "finish": 1792558800000
+      },
+      "previous": {
+        "name": "Sprint 40 (9.21 - 10.5)",
+        "path": "Storefront\\Sprint 40",
+        "start": 1789966800000,
+        "finish": 1791262800000
+      }
+    },
+    "cart": {
+      "current": {
+        "name": "Sprint 41 (10.6 - 10.20)",
+        "path": "Storefront\\Sprint 41",
+        "start": 1791262800000,
+        "finish": 1792558800000
+      },
+      "previous": {
+        "name": "Sprint 40 (9.21 - 10.5)",
+        "path": "Storefront\\Sprint 40",
+        "start": 1789966800000,
+        "finish": 1791262800000
+      }
+    },
+    "store": {
+      "current": {
+        "name": "Sprint 41 (10.6 - 10.20)",
+        "path": "Storefront\\Sprint 41",
+        "start": 1791262800000,
+        "finish": 1792558800000
+      },
+      "previous": {
+        "name": "Sprint 40 (9.21 - 10.5)",
+        "path": "Storefront\\Sprint 40",
+        "start": 1789966800000,
+        "finish": 1791262800000
+      }
+    }
+  }
+}
