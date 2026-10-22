@@ -21,7 +21,16 @@ const tables = (db: ReturnType<typeof openDb>) =>
 test('openDb brings a new database up to the latest schema', () => {
   const db = openDb(':memory:');
   assert.equal((db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version, SCHEMA_VERSION);
-  assert.deepEqual(tables(db), ['decisions', 'lanes', 'mail', 'meta', 'secrets', 'stars', 'stories']);
+  assert.deepEqual(tables(db), [
+    'comment_markers',
+    'decisions',
+    'lanes',
+    'mail',
+    'meta',
+    'secrets',
+    'stars',
+    'stories',
+  ]);
 });
 
 test('reopening a file keeps its rows and runs no migration twice', () => {
@@ -49,7 +58,7 @@ test('version 4 clears the stars stamped when a PR opened, so they rebuild from 
   old.close();
   const db = openDb(file);
   assert.equal((db.prepare('SELECT count(*) AS n FROM stars').get() as { n: number }).n, 0);
-  assert.equal(SCHEMA_VERSION, 5);
+  assert.equal(SCHEMA_VERSION, 6);
   db.close();
 });
 

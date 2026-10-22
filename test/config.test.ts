@@ -14,7 +14,11 @@ import {
   removeLaneFromConfig,
   saveConfig,
   setLaneModel,
+  checkDomain,
+  listDomainFiles,
+  validateConfig,
 } from '../src/main/config.ts';
+import { starterNames } from '../src/main/starter.ts';
 
 const dir = mkdtempSync(path.join(tmpdir(), 'orbit-cfg-'));
 const cwd = path.join(dir, 'repo');
@@ -159,4 +163,67 @@ test('normalizeConfig keeps userName and productTerms when set', () => {
   const bare = normalizeConfig({});
   assert.equal(bare.userName, undefined);
   assert.equal(bare.productTerms, undefined);
+});
+
+test('normalizeConfig keeps storySkill and reviewSkill when set, and the starter fills in what is not', () => {
+  const mine = normalizeConfig({ storyAgent: 'story-manager', storySkill: 'story-engine', reviewSkill: 'review-pr' });
+  assert.deepEqual([mine.storySkill, mine.reviewSkill], ['story-engine', 'review-pr']);
+  assert.deepEqual(starterNames(mine), {
+    storyAgent: 'story-manager',
+    storySkill: 'story-engine',
+    reviewSkill: 'review-pr',
+  });
+  const bare = normalizeConfig({});
+  assert.equal('storySkill' in bare, false);
+  assert.equal('reviewSkill' in bare, false);
+  assert.deepEqual(starterNames(bare), {
+    storyAgent: 'orbit-starter:story-manager',
+    storySkill: 'orbit-starter:story-engine',
+    reviewSkill: 'orbit-starter:review-pr',
+  });
+});
+
+test("listDomainFiles lists the folder's PM domain files, sorted, and none when it has none", () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'orbit-domain-'));
+  assert.deepEqual(listDomainFiles(root), []);
+  const pm = path.join(root, '.claude', 'orbit', 'pm');
+  mkdirSync(pm, { recursive: true });
+  for (const f of ['shop.md', 'billing.md', 'notes.txt']) writeFileSync(path.join(pm, f), '# PM');
+  assert.deepEqual(listDomainFiles(root), ['.claude/orbit/pm/billing.md', '.claude/orbit/pm/shop.md']);
+});
+
+test("a domain file that isn't there still loads, so a branch switch in the PM's folder can't stop Orbit starting", () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'orbit-domain-'));
+  const project = { id: 'shop', name: 'Shop', agent: 'shop-pm', cwd: root, kickoff: 'Run the board.' };
+  const domain = '.claude/orbit/pm/shop.md';
+  assert.doesNotThrow(() => validateConfig(normalizeConfig({ projects: [{ ...project, domain }] })));
+  assert.doesNotThrow(() => validateConfig(normalizeConfig({ projects: [project] })));
+  assert.equal('domain' in normalizeConfig({ projects: [{ ...project, domain: ' ' }] }).projects[0], false);
+});
+
+test('checkDomain refuses a new project whose domain file is not in its folder, naming the project', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'orbit-domain-'));
+  const project = { id: 'shop', name: 'Shop', agent: 'shop-pm', cwd: root, kickoff: 'Run the board.' };
+  const domain = '.claude/orbit/pm/shop.md';
+  assert.throws(
+    () => checkDomain({ ...project, domain }),
+    /project "shop" names a domain file that isn't in its folder: \.claude\/orbit\/pm\/shop\.md/,
+  );
+  assert.doesNotThrow(() => checkDomain(project));
+  mkdirSync(path.join(root, '.claude', 'orbit', 'pm'), { recursive: true });
+  writeFileSync(path.join(root, domain), '# Shop PM');
+  assert.doesNotThrow(() => checkDomain({ ...project, domain }));
+});
+
+test('validateConfig refuses a chat whose project names no project, and keeps one that does', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'orbit-chat-'));
+  const project = { id: 'shop', name: 'Shop', agent: 'shop-pm', cwd: root, kickoff: 'Run the board.' };
+  const chat = { id: 'helper', name: 'Helper', cwd: root };
+  assert.throws(
+    () => validateConfig(normalizeConfig({ projects: [project], chats: [{ ...chat, project: 'cart' }] })),
+    /chat "helper" borrows the board of "cart", which is not a project/,
+  );
+  const ok = normalizeConfig({ projects: [project], chats: [{ ...chat, project: 'shop' }] });
+  assert.doesNotThrow(() => validateConfig(ok));
+  assert.equal(ok.chats[0].project, 'shop');
 });

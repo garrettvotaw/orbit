@@ -1,0 +1,91 @@
+# The fields sum.js reads for each PR. sum.js wraps this fragment in one query that aliases a
+# pullRequest(number: N) per PR, so a whole sweep is a single call. Keep it one fragment named PR.
+fragment PR on PullRequest {
+  number
+  title
+  state
+  mergedAt
+  isDraft
+  mergeable
+  mergeStateStatus
+  baseRefName
+  headRefName
+  author {
+    login
+  }
+  commits(last: 1) {
+    nodes {
+      commit {
+        oid
+        committedDate
+        statusCheckRollup {
+          state
+          contexts(last: 100) {
+            nodes {
+              __typename
+              ... on CheckRun {
+                name
+                status
+                conclusion
+                detailsUrl
+              }
+              ... on StatusContext {
+                context
+                state
+                targetUrl
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  reviews(last: 30) {
+    nodes {
+      author {
+        login
+      }
+      state
+      submittedAt
+    }
+  }
+  reviewRequests(last: 10) {
+    nodes {
+      requestedReviewer {
+        __typename
+        ... on User {
+          login
+        }
+        ... on Team {
+          slug
+        }
+        ... on Bot {
+          login
+        }
+        ... on Mannequin {
+          login
+        }
+      }
+    }
+  }
+  reviewThreads(last: 50) {
+    nodes {
+      id
+      isResolved
+      isOutdated
+      resolvedBy {
+        login
+      }
+      path
+      line
+      comments(first: 10) {
+        nodes {
+          author {
+            login
+          }
+          body
+        }
+      }
+    }
+  }
+}

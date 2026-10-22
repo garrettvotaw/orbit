@@ -9,7 +9,22 @@ import type {
 } from '../../shared/types.ts';
 import type { GhRunner } from '../github.ts';
 import { STAGE_COLORS, columnFor, stageFromName, withStages } from './stages.ts';
-import { TrackerAuthError, TrackerMoveError, noColumnError, type StoryDetail, type Tracker } from './tracker.ts';
+import {
+  TrackerAuthError,
+  TrackerMoveError,
+  TrackerUnsupportedError,
+  markerTag,
+  noColumnError,
+  noSuchColumnError,
+  withMarker,
+  type CommentOptions,
+  type CommentResult,
+  type LinkKind,
+  type MoveOptions,
+  type StoryDetail,
+  type StoryFile,
+  type Tracker,
+} from './tracker.ts';
 
 // One line each, like TEAM_PRS_QUERY, so they pass through Windows argument quoting untouched.
 const ISSUE_FIELDS = [
@@ -44,6 +59,12 @@ const labelQuery = (filter: string) =>
 export const LABEL_OPEN_QUERY = labelQuery('states: OPEN, ');
 export const LABEL_ANY_QUERY = labelQuery('');
 
+export const ISSUE_PARENT_QUERY = [
+  'query($owner: String!, $name: String!, $number: Int!) {',
+  'repository(owner: $owner, name: $name) { issue(number: $number) {',
+  'parent { number title url state body } } } }',
+].join(' ');
+
 export const SET_STATUS_MUTATION = [
   'mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {',
   'updateProjectV2ItemFieldValue(input: { projectId: $project, itemId: $item, fieldId: $field,',
@@ -61,6 +82,7 @@ const LABEL_COLUMNS: BoardColumn[] = [
   { name: 'Closed', stage: 'done', color: STAGE_COLORS.done },
 ];
 const MAX_PAGES = 50;
+const LINK_COMMENT: Record<LinkKind, string> = { duplicate: 'Duplicate of', related: 'Related to', blocks: 'Blocks' };
 
 interface RawIssue {
   __typename?: string;
@@ -129,6 +151,7 @@ export class GitHubIssuesAdapter implements Tracker {
   #items = new Map<string, TrackerItem>();
   /** updatedAt per issue from the last project read, for shipped(since). */
   #updated = new Map<string, string>();
+  #me: string | null = null;
 
   constructor(cfg: GitHubTrackerConfig, gh: GhRunner) {
     this.#cfg = cfg;
@@ -185,13 +208,11 @@ export class GitHubIssuesAdapter implements Tracker {
       assignees?: Array<{ login?: string }>;
       comments?: Array<{ author?: { login?: string }; createdAt?: string; body?: string }>;
     };
-    const closed = raw.state === 'CLOSED';
-    const item = this.#items.get(id) ?? {
-      ...this.#toItem({ number: raw.number, title: raw.title, url: raw.url, state: raw.state }, null, null),
-      column: closed ? 'Closed' : 'Open',
-      stage: closed ? 'done' : 'not-started',
+    const item = {
+      ...this.#known({ number: raw.number, title: raw.title, url: raw.url, state: raw.state }),
       assignedTo: raw.assignees?.[0]?.login ?? null,
     };
+    const parent = await this.#parent(id);
     return {
       item,
       description: raw.body ?? '',
@@ -203,34 +224,121 @@ export class GitHubIssuesAdapter implements Tracker {
       })),
       children: [],
       links: [],
+      reproSteps: null,
+      parent: parent && { item: this.#known(parent), description: parent.body ?? '', acceptance: null },
+      // GitHub has no typed links and keeps files inline in the text.
+      related: [],
+      attachments: [],
     };
   }
 
-  async move(key: string, stage: OrbitStage, note?: string): Promise<BoardColumn> {
+  /** An issue as the last board read saw it, else Open or Closed by its state. */
+  #known(raw: RawIssue): TrackerItem {
+    const seen = this.#items.get(String(raw.number));
+    if (seen) return seen;
+    const closed = raw.state === 'CLOSED';
+    return { ...this.#toItem(raw, closed ? 'Closed' : 'Open', null), stage: closed ? 'done' : 'not-started' };
+  }
+
+  /** The issue's parent, when it is a sub-issue. */
+  async #parent(id: string): Promise<(RawIssue & { body?: string }) | null> {
+    const [owner, name] = this.#cfg.repo.split('/');
+    const res = (await this.#graphql(ISSUE_PARENT_QUERY, { owner, name }, { number: Number(id) })) as {
+      data?: { repository?: { issue?: { parent?: (RawIssue & { body?: string }) | null } } };
+    };
+    return res.data?.repository?.issue?.parent ?? null;
+  }
+
+  async move(key: string, stage: OrbitStage, opts: MoveOptions = {}): Promise<BoardColumn> {
     const id = issueNumber(key);
     const column =
-      this.#cfg.project === undefined ? await this.#moveLabel(id, stage) : await this.#moveProject(id, stage);
-    if (note) await this.comment(id, note);
+      this.#cfg.project === undefined
+        ? await this.#moveLabel(id, stage, opts.column)
+        : await this.#moveProject(id, stage, opts.column);
+    if (opts.assignToMe) await this.#run(['issue', 'edit', id, '-R', this.#cfg.repo, '--add-assignee', '@me']);
+    if (opts.note) await this.comment(id, opts.note);
     return column;
   }
 
-  async comment(key: string, text: string): Promise<void> {
+  async comment(key: string, text: string, opts: CommentOptions = {}): Promise<CommentResult> {
     const id = issueNumber(key);
-    await this.#run(['issue', 'comment', id, '-R', this.#cfg.repo, '--body-file', '-'], text);
+    const body = withMarker(text, opts.marker);
+    const found = opts.marker ? await this.#findComment(id, markerTag(opts.marker)) : null;
+    if (found !== null) {
+      const path = `repos/${this.#cfg.repo}/issues/comments/${found}`;
+      await this.#run(['api', '-X', 'PATCH', path, '--input', '-'], JSON.stringify({ body }));
+      return 'updated';
+    }
+    await this.#run(['issue', 'comment', id, '-R', this.#cfg.repo, '--body-file', '-'], body);
+    return 'posted';
   }
 
-  async #moveLabel(id: string, stage: OrbitStage): Promise<BoardColumn> {
+  /**
+   * GitHub's link is a comment naming the other issue, which it shows as a cross-reference; a duplicate
+   * gets the "Duplicate of" comment GitHub recognizes and is closed as one.
+   */
+  async link(key: string, otherKey: string, kind: LinkKind): Promise<void> {
+    const id = issueNumber(key);
+    const other = `#${issueNumber(otherKey)}`;
+    await this.comment(id, `${LINK_COMMENT[kind]} ${other}`);
+    if (kind !== 'duplicate') return;
+    const path = `repos/${this.#cfg.repo}/issues/${id}`;
+    await this.#run(['api', '-X', 'PATCH', path, '-f', 'state=closed', '-f', 'state_reason=duplicate']);
+  }
+
+  /**
+   * The id of an issue comment the signed-in user wrote whose markdown carries this tag, or null.
+   * A quote reply copies the tag, so the author is what tells Orbit's comment from a teammate's.
+   */
+  async #findComment(id: string, tag: string): Promise<number | null> {
+    const me = await this.#login();
+    const path = `repos/${this.#cfg.repo}/issues/${id}/comments?per_page=100`;
+    const out = await this.#run(['api', '--paginate', path, '--jq', '.[] | {id, body, login: .user.login}']);
+    for (const line of out.split('\n')) {
+      if (!line.trim()) continue;
+      const c = JSON.parse(line) as { id: number; body?: string; login?: string };
+      if (c.body?.includes(tag) && c.login === me) return c.id;
+    }
+    return null;
+  }
+
+  /** Who gh is signed in as, asked once. */
+  async #login(): Promise<string> {
+    this.#me ??= (await this.#run(['api', 'user', '--jq', '.login'])).trim();
+    return this.#me;
+  }
+
+  async attach(): Promise<{ name: string; url: string }> {
+    throw new TrackerUnsupportedError(
+      "GitHub's API has no issue attachments; commit the file or link it in a comment.",
+    );
+  }
+
+  async attachment(): Promise<StoryFile> {
+    throw new TrackerUnsupportedError(
+      'GitHub keeps files inline in the issue text; read the links in its description.',
+    );
+  }
+
+  async #moveLabel(id: string, wanted: OrbitStage, columnName?: string): Promise<BoardColumn> {
+    const named = columnName ? LABEL_COLUMNS.find((c) => c.name === columnName) : undefined;
+    if (columnName && named?.name !== 'Open' && named?.name !== 'Closed')
+      throw noSuchColumnError(
+        columnName,
+        LABEL_COLUMNS.filter((c) => c.name !== 'PR open'),
+      );
+    const stage = named?.stage ?? wanted;
     if (stage === 'done') await this.#run(['issue', 'close', id, '-R', this.#cfg.repo]);
     else if (stage === 'not-started') await this.#run(['issue', 'reopen', id, '-R', this.#cfg.repo]);
     else throw new TrackerMoveError(`A label board has no "${stage}" column; its PR open column follows linked PRs.`);
     return LABEL_COLUMNS.find((c) => c.stage === stage)!;
   }
 
-  async #moveProject(id: string, stage: OrbitStage): Promise<BoardColumn> {
+  async #moveProject(id: string, stage: OrbitStage, columnName?: string): Promise<BoardColumn> {
     if (!this.#columns.length || !this.#itemIds.has(id)) await this.board();
     const targets = this.#columns.filter((c) => c.name !== NO_STATUS);
-    const column = columnFor(stage, targets);
-    if (!column) throw noColumnError(stage, targets);
+    const column = columnName ? (targets.find((c) => c.name === columnName) ?? null) : columnFor(stage, targets);
+    if (!column) throw columnName ? noSuchColumnError(columnName, targets) : noColumnError(stage, targets);
     const item = this.#itemIds.get(id);
     if (!item) throw new TrackerMoveError(`#${id} is not on project ${this.#cfg.project}.`);
     const option = this.#statusField?.options?.find((o) => o.name === column.name);

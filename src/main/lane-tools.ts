@@ -121,12 +121,12 @@ const items = (what: string) =>
 export function boardTool(sink: LaneSink, lane: { id: string }) {
   return tool(
     'report_board',
-    'Send Orbit the board you just derived, at the end of every board run. Orbit draws the counts under your core and refreshes the ADO ring from it. Your reply text stays the short Teams-style update.',
+    'Send Orbit the board you just derived, at the end of every board run. Orbit draws the counts under your core and refreshes the board ring from it. Your reply text stays the short Teams-style update.',
     {
       shipped: items('Stories that reached a PR or merged this run'),
       inFlight: items('Stories being built right now'),
       consults: items('Stories still in consults or planning'),
-      drift: items('Stories whose ADO state is out of step with their PR'),
+      drift: items('Stories whose tracker column is out of step with their PR'),
       blocked: items('Stories waiting on someone, like "100205 waiting on Q19"'),
       next: z.string().optional().describe('The story you would start next, if any.'),
     },

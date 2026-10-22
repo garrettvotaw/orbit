@@ -47,7 +47,6 @@ export interface Mail {
   at: number;
 }
 
-export const STORY_AGENT = 'story-manager';
 export const STORY_WIP_CAP = 2;
 /** The most a story moon runs on. */
 export const STORY_MODEL_CAP = 'claude-opus-5-5';
@@ -347,10 +346,16 @@ export function storyInfo(rec: StoryRecord): StoryInfo {
 }
 
 /** The first message a story moon receives: who it is, what it owns, and the PM's brief. */
-export function storyKickoff(input: { storyId: string; title: string; parentName: string; brief: string }): string {
+export function storyKickoff(input: {
+  storyId: string;
+  title: string;
+  parentName: string;
+  brief: string;
+  skill: string;
+}): string {
   return [
-    `You are the story manager for ADO story ${input.storyId}: ${input.title}.`,
-    `You were started by the ${input.parentName} PM, which is only scheduling; you own this story from worktree to pull request. Run the story-engine skill.`,
+    `You are the story manager for story ${input.storyId}: ${input.title}.`,
+    `You were started by the ${input.parentName} PM, which is only scheduling; you own this story from worktree to pull request. Run the ${input.skill} skill.`,
     'Report to the PM with report_to_pm at these points and no others: planned (after your consults, with the files you claimed), pr-opened, blocked, or failed. After pr-opened, blocked, or failed you are done: end your turn.',
     'Before any lane edits a file, claim the files with claim_files; if another story holds one, Orbit parks this story until it lets go: end your turn, and carry on when Orbit says the files are yours.',
     'Product questions go through ask_product_owner, tagged with this story.',
@@ -514,6 +519,8 @@ export interface PmToolOptions {
   cap: number;
   model: string | null;
   agent: string;
+  /** The skill each story's kickoff tells it to run. */
+  skill: string;
 }
 
 type ToolResult = { content: Array<{ type: 'text'; text: string }>; isError?: true };
@@ -610,7 +617,7 @@ function startStory(
       `Not started: ${inFlight.length} of ${opts.cap} stories are in flight (${list}). Wait for a report, then try again.`,
     );
   }
-  const brief = storyKickoff({ storyId, title, parentName: lane.name, brief: args.brief });
+  const brief = storyKickoff({ storyId, title, parentName: lane.name, brief: args.brief, skill: opts.skill });
   const rec = existing
     ? restartStory(store, host, existing, lane, { title, brief })
     : newMoon(store, host, lane, opts, { storyId, title, brief });
@@ -690,14 +697,14 @@ export function pmStoryTools(store: StoryStore, host: MoonHost, lane: PmLane, op
   const start = tool(
     'start_story',
     [
-      'Hand a story to a session of its own (a moon around your core) that owns it from worktree to pull request: consults, claimed files, TDD lanes, gates, push, PR, ADO moves.',
+      'Hand a story to a session of its own (a moon around your core) that owns it from worktree to pull request: consults, claimed files, TDD lanes, gates, push, PR, tracker moves.',
       'You keep the board, the choice of what to start, and your report; do not run the story recipe yourself once this tool exists.',
       'Refused when you already have the allowed number of stories in flight, or this story is already running. Reports arrive later as user messages starting "Story report <id>".',
       'A story that finished blocked or failed starts again on the moon it has, keeping its session and worktree. A story waiting on files another story holds is still in flight: Orbit wakes it, so do not start it again.',
     ].join(' '),
     {
       storyId: z.string().describe('The story id as its tracker writes it: 100204, ACME-123, or 45.'),
-      title: z.string().describe('The story title, as ADO shows it.'),
+      title: z.string().describe('The story title, as the tracker shows it.'),
       brief: z
         .string()
         .describe(

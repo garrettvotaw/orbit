@@ -14,6 +14,8 @@ import type {
   ReviewResult,
   WaitView,
 } from '../shared/types.ts';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { emptyLane } from '../shared/types.ts';
 import { userContent, withScreenshots } from './attachments.ts';
 import { AttentionQueue } from './attention.ts';
@@ -24,6 +26,7 @@ import { PushableStream } from './input-stream.ts';
 import { laneRules, type LaneSink, type NeedsYou } from './lane-tools.ts';
 import { errorCodeFor, pruneAgents, reduceLane, stopAgents, type SdkMsg } from './reducer.ts';
 import type { TestSlots } from './slots.ts';
+import { STARTER } from './starter.ts';
 
 export interface SdkUserMessage {
   type: 'user';
@@ -73,8 +76,9 @@ type TaskMsg =
 
 /** How long a heavy command may wait in line before the CLI gives up on the hook. */
 const GATE_TIMEOUT_S = 3_600;
-/** Every lane runs Nx two tasks at a time and without a daemon, which each worktree would otherwise leave running. */
+/** A lane in an Nx repo runs Nx two tasks at a time and without a daemon, which each worktree would otherwise leave running. */
 const LANE_NX_ENV = { NX_PARALLEL: '2', NX_DAEMON: 'false' };
+const nxEnvFor = (cwd: string) => (existsSync(join(cwd, 'nx.json')) ? LANE_NX_ENV : {});
 
 const RESUME_PROMPT = 'You were interrupted. Re-derive the board and continue.';
 const CHAT_RESUME_PROMPT = 'You were interrupted. Pick up where we left off.';
@@ -82,8 +86,11 @@ const STORY_RESUME_PROMPT =
   'You were interrupted. Check where your story stands (its worktree, branch, PR, and the reports you already sent your PM) and carry on from there; any lane that was running was stopped, so redo its last step if its work is not in the worktree.';
 const MONITOR_KICKOFF = (skill: string) =>
   `Run the ${skill} skill. Do not arm a cron and do not start serve.js; the host watches GitHub for you and sends a "tick" message when one of your PRs moves, listing what changed, plus a plain "tick" on a slow fallback schedule. On each tick: sweep (start with the PRs the tick names), act, update state.json, then post_status with one line. When something only I can do or decide comes up, like a merge call or a thread only I can resolve, raise it with needs_you and keep working the other PRs; a question in your reply text never reaches me. Product questions go to ask_product_owner; check list_product_questions first so you never ask twice.`;
+/** A PM with a domain file reads it before its own kickoff. */
+const PROJECT_KICKOFF = (kickoff: string, domain?: string) =>
+  domain ? `Your PM domain file is ${domain}; read it before anything else.\n\n${kickoff}` : kickoff;
 /** The skill reads $ARGUMENTS from the slash command, so the kickoff is the command itself. */
-const REVIEW_KICKOFF = (pr: number) => `/review-pr ${pr}`;
+const REVIEW_KICKOFF = (pr: number, skill: string) => `/${skill} ${pr}`;
 const AUTO_RESUME_MS = 60_000;
 const INTERRUPT_GRACE_MS = 3_000;
 /** The SDK gives a closed CLI about two seconds to exit on its own and force-kills it five seconds later. */
@@ -126,6 +133,7 @@ export class SessionHost implements LaneSink {
   readonly #admit: () => boolean;
   readonly #killLane: (laneId: string) => void;
   readonly #userName: () => string;
+  readonly #reviewSkill: () => string;
   /** Launches waiting for memory, oldest first, with the session each resumes (null starts fresh). */
   readonly #held = new Map<string, { sessionId: string | null; since: number }>();
   /** The Bash tool call behind each task the CLI reported, for task messages that name only the task. */
@@ -150,6 +158,8 @@ export class SessionHost implements LaneSink {
     killLane?: (laneId: string) => void;
     /** What the lane rules call whoever reads Orbit. */
     userName?: () => string;
+    /** The skill a review lane runs, read each time one starts. */
+    reviewSkill?: () => string;
   }) {
     this.#query = deps.query;
     this.#attention = deps.attention;
@@ -161,6 +171,7 @@ export class SessionHost implements LaneSink {
     this.#admit = deps.admit ?? (() => true);
     this.#killLane = deps.killLane ?? (() => {});
     this.#userName = deps.userName ?? (() => 'the user');
+    this.#reviewSkill = deps.reviewSkill ?? (() => STARTER.reviewSkill);
     this.#spent = new SpendLedger(null, this.#now());
     this.#attention.onChange(() => this.#emit());
   }
@@ -508,11 +519,11 @@ export class SessionHost implements LaneSink {
           ? STORY_RESUME_PROMPT
           : RESUME_PROMPT
       : cfg.kind === 'project'
-        ? cfg.kickoff
+        ? PROJECT_KICKOFF(cfg.kickoff, cfg.domain)
         : cfg.kind === 'monitor'
           ? MONITOR_KICKOFF(cfg.skill)
           : cfg.kind === 'review'
-            ? REVIEW_KICKOFF(cfg.pr)
+            ? REVIEW_KICKOFF(cfg.pr, this.#reviewSkill())
             : cfg.kind === 'story'
               ? cfg.brief
               : (cfg.kickoff ?? null);
@@ -536,7 +547,7 @@ export class SessionHost implements LaneSink {
       agentProgressSummaries: true,
       forwardSubagentText: false,
       includePartialMessages: false,
-      env: { ...process.env, ORBIT_LANE: cfg.id, ...LANE_NX_ENV },
+      env: { ...process.env, ORBIT_LANE: cfg.id, ...nxEnvFor(cfg.cwd) },
       canUseTool: (tool: string, inp: Record<string, unknown>, o: ToolContext) =>
         this.#canUseTool(laneId, tool, inp, o),
     };

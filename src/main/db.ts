@@ -54,6 +54,11 @@ const MIGRATIONS: string[] = [
   `DELETE FROM stars;`,
   // Tracker sign-ins that have no CLI to keep them (Jira), encrypted with Electron's safeStorage.
   `CREATE TABLE IF NOT EXISTS secrets (key TEXT PRIMARY KEY, value TEXT NOT NULL);`,
+  // ADO strips Orbit's hidden marker from comment HTML, so Orbit remembers which comment holds it.
+  `CREATE TABLE IF NOT EXISTS comment_markers (
+     tracker TEXT NOT NULL, story TEXT NOT NULL, marker TEXT NOT NULL, comment_id TEXT NOT NULL,
+     PRIMARY KEY (tracker, story, marker)
+   );`,
 ];
 export const SCHEMA_VERSION = MIGRATIONS.length;
 

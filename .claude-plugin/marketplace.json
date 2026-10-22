@@ -1,0 +1,12 @@
+{
+  "name": "orbit",
+  "owner": { "name": "Orbit" },
+  "allowCrossMarketplaceDependenciesOn": ["claude-plugins-official"],
+  "plugins": [
+    {
+      "name": "orbit-starter",
+      "source": "./starter",
+      "description": "Starter agents and skills for running a delivery workflow under Orbit."
+    }
+  ]
+}

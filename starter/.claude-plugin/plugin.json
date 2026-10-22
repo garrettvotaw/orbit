@@ -1,0 +1,6 @@
+{
+  "name": "orbit-starter",
+  "description": "Starter agents and skills for running a delivery workflow under Orbit.",
+  "version": "0.1.0",
+  "dependencies": [{ "name": "superpowers", "marketplace": "claude-plugins-official" }]
+}

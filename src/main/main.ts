@@ -26,6 +26,7 @@ import { AdoClient, AdoTokenProvider } from './trackers/ado.ts';
 import { trackerOf } from './trackers/config.ts';
 import { JiraClient, type JiraCreds } from './trackers/jira.ts';
 import { TrackerPoller } from './trackers/poller.ts';
+import { MarkerStore } from './trackers/markers.ts';
 import { TrackerRegistry } from './trackers/registry.ts';
 import { SecretStore, jiraSecretKey } from './secrets.ts';
 import { AttentionQueue } from './attention.ts';
@@ -41,8 +42,8 @@ import {
 } from './decisions.ts';
 import { boardTool, laneTools, reviewTool } from './lane-tools.ts';
 import { boardToolsFor, type BoardAccess } from './board-tools.ts';
+import { starterNames } from './starter.ts';
 import {
-  STORY_AGENT,
   STORY_RETENTION_MS,
   STORY_WIP_CAP,
   StoryStore,
@@ -65,9 +66,11 @@ import { TestSlots } from './slots.ts';
 import {
   defaultUserName,
   addLaneToConfig,
+  checkDomain,
   defaultConfigPath,
   expandHome,
   lanesOf,
+  listDomainFiles,
   loadConfig,
   removeLaneFromConfig,
   saveConfig,
@@ -182,7 +185,8 @@ app.whenReady().then(() => {
   // Every lane but a chat gets needs_you, withdraw_needs_you, and post_status. PM sessions add
   // report_board, the product-question tools and, unless storyMoons is off, the story tools;
   // story moons add product questions tagged with their story plus claim_files and report_to_pm;
-  // monitors add the product-question tools; reviews add review_preview.
+  // monitors add the product-question tools; reviews add review_preview. A chat that names a
+  // project gets that project's board tools and nothing else.
   // Read when a lane starts, by which time the tracker registry and poller below exist.
   const boardAccess: BoardAccess = {
     tracker: (id) => registry.for(id),
@@ -195,7 +199,10 @@ app.whenReady().then(() => {
   const who = () => config.userName ?? defaultUserName(userInfo().username);
   const askOpts = () => ({ who: who(), productTerms: config.productTerms ?? [] });
   const toolsFor = (cfg: LaneConfig): Record<string, unknown> | null => {
-    if (cfg.kind === 'chat') return null;
+    if (cfg.kind === 'chat') {
+      const board = boardToolsOf(cfg);
+      return board.length ? { orbit: orbitServer(board) } : null;
+    }
     const own = laneTools(host, { id: cfg.id, story: cfg.kind === 'story' ? cfg.storyId : null }, who());
     if (cfg.kind === 'review') return { orbit: orbitServer([...own, reviewTool(host, cfg, who())]) };
     if (cfg.kind === 'project') {
@@ -210,7 +217,8 @@ app.whenReady().then(() => {
           ...pmStoryTools(stories, moons, cfg, {
             cap: config.storyWipCap ?? STORY_WIP_CAP,
             model: capStoryModel(config.storyModel ?? cfg.model),
-            agent: config.storyAgent ?? STORY_AGENT,
+            agent: starterNames(config).storyAgent,
+            skill: starterNames(config).storySkill,
           }),
         );
       return { orbit: orbitServer(tools) };
@@ -256,6 +264,7 @@ app.whenReady().then(() => {
     admit: () => guard.admits(),
     killLane: (id) => children.killLane(id),
     userName: () => who(),
+    reviewSkill: () => starterNames(config).reviewSkill,
   });
   // Launches a PM or Orbit asks for wait for memory, and a held moon counts as up so its mail
   // waits for it. Your own clicks go to the host directly and never wait.
@@ -302,6 +311,7 @@ app.whenReady().then(() => {
     ado: adoClient,
     jira: (site) => new JiraClient(site, () => jiraCreds(site)),
     gh,
+    markers: new MarkerStore(db),
   });
   const trackerBoards = new TrackerPoller({
     trackers: registry,
@@ -547,6 +557,7 @@ app.whenReady().then(() => {
         if (fixture) break;
         const lane = { ...cmd.lane, cwd: expandHome(cmd.lane.cwd) } as LaneConfig;
         if (!existsSync(lane.cwd)) throw new Error(`Folder does not exist: ${lane.cwd}`);
+        if (lane.kind === 'project') checkDomain(lane);
         const next = addLaneToConfig(config, lane);
         validateConfig(next);
         saveConfig(configFile, next);
@@ -666,6 +677,8 @@ app.whenReady().then(() => {
       }
       case 'agents':
         return { agents: fixture ? (fixture.agents ?? []) : listAgents(expandHome(req.cwd)) };
+      case 'listDomainFiles':
+        return { files: listDomainFiles(expandHome(req.cwd)) };
       case 'models': {
         const seen = host
           .snapshot()

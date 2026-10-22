@@ -1,5 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { SessionHost, type QueryFactory, type QueryLike } from '../src/main/session-host.ts';
 import { AttentionQueue } from '../src/main/attention.ts';
 import { TestSlots } from '../src/main/slots.ts';
@@ -510,7 +513,7 @@ test('transient review lanes survive config reloads, kick off the skill, and lea
 
   host.start('review-7127');
   await tick();
-  assert.equal((calls[0].sent[0] as { message: { content: string } }).message.content, '/review-pr 7127');
+  assert.equal((calls[0].sent[0] as { message: { content: string } }).message.content, '/orbit-starter:review-pr 7127');
   assert.equal(calls[0].options.agent, undefined);
   assert.equal(host.removeTransient('review-7127'), false, 'live lanes stay');
   await host.stop('review-7127');
@@ -825,17 +828,6 @@ function settled(p: Promise<unknown>) {
   return w;
 }
 
-test('lanes get NX_PARALLEL=2 and NX_DAEMON=false', async () => {
-  const { factory, calls } = fakeQuery();
-  const host = new SessionHost({ query: factory, attention: new AttentionQueue() });
-  host.setLanes([shop]);
-  host.start('shop');
-  await tick();
-  const env = calls[0].options.env as Record<string, string>;
-  assert.equal(env.NX_PARALLEL, '2');
-  assert.equal(env.NX_DAEMON, 'false');
-});
-
 test('a heavy Bash waits for a slot and runs when the holder finishes', async () => {
   const { factory, calls } = fakeQuery();
   const slots = new TestSlots({ base: 1 });
@@ -1097,4 +1089,64 @@ test('the waiting bubble goes once the command gets its slot', async () => {
   });
   await second;
   assert.equal(host.lane('prs')?.bubble, null);
+});
+
+test('a review lane kicks off the review skill from config', async () => {
+  const { factory, calls } = fakeQuery();
+  const host = new SessionHost({ query: factory, attention: new AttentionQueue(), reviewSkill: () => 'review-pr' });
+  host.addTransient({
+    kind: 'review',
+    id: 'review-41',
+    name: '#41 review',
+    cwd: 'C:/tmp',
+    pr: 41,
+    repo: 'o/r',
+    url: 'https://github.com/o/r/pull/41',
+  });
+  host.start('review-41');
+  await tick();
+  assert.equal((calls[0].sent[0] as { message: { content: string } }).message.content, '/review-pr 41');
+  await host.stop('review-41');
+});
+
+test('a lane gets the Nx env only when its folder has an nx.json', async () => {
+  const plain = mkdtempSync(join(tmpdir(), 'orbit-plain-'));
+  const nx = mkdtempSync(join(tmpdir(), 'orbit-nx-'));
+  try {
+    writeFileSync(join(nx, 'nx.json'), '{}');
+    const { factory, calls } = fakeQuery();
+    const host = new SessionHost({ query: factory, attention: new AttentionQueue() });
+    host.setLanes([
+      { ...shop, cwd: plain },
+      { ...shop, id: 'mono', cwd: nx },
+    ]);
+    host.start('shop');
+    host.start('mono');
+    await tick();
+    const envOf = (i: number) => calls[i].options.env as Record<string, string>;
+    assert.deepEqual(
+      Object.keys(envOf(0)).filter((k) => k.startsWith('NX_') && !(k in process.env)),
+      [],
+    );
+    assert.equal(envOf(1).NX_PARALLEL, '2');
+    assert.equal(envOf(1).NX_DAEMON, 'false');
+  } finally {
+    rmSync(plain, { recursive: true, force: true });
+    rmSync(nx, { recursive: true, force: true });
+  }
+});
+
+test('a project kickoff names its PM domain file first when it has one', async () => {
+  const { factory, calls } = fakeQuery();
+  const host = new SessionHost({ query: factory, attention: new AttentionQueue() });
+  host.setLanes([{ ...shop, domain: '.claude/orbit/pm/shop.md' } as LaneConfig, { ...shop, id: 'plain' }]);
+  host.start('shop');
+  host.start('plain');
+  await tick();
+  const sent = (i: number) => (calls[i].sent[0] as { message: { content: string } }).message.content;
+  assert.equal(
+    sent(0),
+    'Your PM domain file is .claude/orbit/pm/shop.md; read it before anything else.\n\nRun the Shop board.',
+  );
+  assert.equal(sent(1), 'Run the Shop board.');
 });

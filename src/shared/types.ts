@@ -116,6 +116,8 @@ export interface ProjectConfig {
   githubRepo?: string;
   kickoff: string;
   model?: string;
+  /** The PM's domain file, relative to its folder, like `.claude/orbit/pm/shop.md`; its kickoff reads it first. */
+  domain?: string;
 }
 export interface MonitorConfig {
   id: string;
@@ -136,6 +138,8 @@ export interface ChatConfig {
   cwd: string;
   model?: string;
   kickoff?: string;
+  /** A project whose board tools this chat borrows, by id. */
+  project?: string;
 }
 /** A one-off session that runs the review-pr skill on a teammate's PR. Lives only while the app runs. */
 export interface ReviewConfig {
@@ -216,8 +220,12 @@ export interface OrbitConfig {
   storyWipCap?: number;
   /** Model every story moon starts on; omitted means the PM's own model. Fable comes down to Opus. */
   storyModel?: string;
-  /** The agent a story moon runs. Default story-manager. */
+  /** The agent a story moon runs. Default orbit-starter:story-manager. */
   storyAgent?: string;
+  /** The skill a story moon's kickoff tells it to run. Default orbit-starter:story-engine. */
+  storySkill?: string;
+  /** The skill a review lane runs as its slash command. Default orbit-starter:review-pr. */
+  reviewSkill?: string;
   /** How many heavy test or build commands may run at once across every lane. Default 2. */
   testSlots?: number;
   /** Free memory, in GB, below which the line drops to one slot and new moons wait. Default 8. */
@@ -648,7 +656,7 @@ export function emptyLane(cfg: LaneConfig): Lane {
 export interface AgentOption {
   name: string;
   description: string;
-  source: 'user' | 'project';
+  source: 'user' | 'project' | 'plugin';
   /** The `color` the agent file declares, as hex; null when it declares none. */
   color: string | null;
 }

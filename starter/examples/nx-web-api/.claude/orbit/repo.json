@@ -1,0 +1,33 @@
+{
+  "baseBranch": "main",
+  "branchTemplate": "{prefix}/{id}-{slug}",
+  "prefix": "feat",
+  "worktree": {
+    "copy": [".env"],
+    "link": ["node_modules"],
+    "install": "npm ci"
+  },
+  "gates": {
+    "test": "npx nx affected -t test --base=origin/main",
+    "lint": "npx nx affected -t lint --base=origin/main",
+    "format": "npx nx format:check --base=origin/main"
+  },
+  "serve": "npx nx run-many -t serve -p web api",
+  "prLink": "Closes #{id}",
+  "lanes": [
+    { "glob": "apps/web/**", "agent": "orbit-starter:frontend" },
+    { "glob": "libs/*/client/**", "agent": "orbit-starter:frontend" },
+    { "glob": "apps/api/**", "agent": "orbit-starter:backend" },
+    { "glob": "libs/*/server/**", "agent": "orbit-starter:backend" }
+  ],
+  "consults": {
+    "requirements": true,
+    "architect": true,
+    "ux": { "when": "the story changes a screen" },
+    "testData": false
+  },
+  "maxOpenPrs": 8,
+  "merge": "ask",
+  "resolveThreads": "ask",
+  "runbook": ".claude/orbit/runbook.md"
+}

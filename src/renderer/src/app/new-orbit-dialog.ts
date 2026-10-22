@@ -4,12 +4,15 @@ import {
   computed,
   effect,
   inject,
+  linkedSignal,
   signal,
 } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { catchError, from, of, switchMap } from 'rxjs';
 import { OrbitStore } from './orbit-store';
 import { newProjectBoard } from './pure/new-orbit';
-import type { AgentOption, LaneConfig } from '../../../shared/types';
+import type { AgentOption, LaneConfig, ProjectConfig } from '../../../shared/types';
 
 type Kind = 'project' | 'chat';
 
@@ -177,6 +180,22 @@ type Kind = 'project' | 'chat';
               >
             }
           </div>
+          @if (domainFiles().length) {
+            <div class="field">
+              <label for="no-domain">Domain file</label
+              ><select
+                id="no-domain"
+                [ngModel]="domain()"
+                (ngModelChange)="domain.set($event)"
+                name="domain"
+              >
+                <option value="">None</option>
+                @for (f of domainFiles(); track f) {
+                  <option [value]="f">{{ f }}</option>
+                }
+              </select>
+            </div>
+          }
           <div class="field">
             <label for="no-kickoff">Kickoff</label
             ><input
@@ -187,6 +206,23 @@ type Kind = 'project' | 'chat';
               name="kickoff"
               placeholder="Run the board."
             />
+          </div>
+        }
+        @if (kind() === 'chat' && boardProjects().length) {
+          <div class="field">
+            <label for="no-board">Board</label
+            ><select
+              id="no-board"
+              [ngModel]="project()"
+              (ngModelChange)="project.set($event)"
+              name="board"
+            >
+              <option value="">None</option>
+              @for (p of boardProjects(); track p.id) {
+                <option [value]="p.id">{{ p.name }}</option>
+              }
+            </select>
+            <small class="hint">The chat can read and move that project's stories.</small>
           </div>
         }
         <div class="field">
@@ -226,6 +262,36 @@ export class NewOrbitDialog {
   readonly error = signal<string | null>(null);
   readonly busy = signal(false);
 
+  /** The Project PM folder's domain files, read again as the folder changes. */
+  readonly domainFiles = toSignal(
+    toObservable(
+      computed(() =>
+        this.store.newOrbitOpen() && this.kind() === 'project' ? this.cwd().trim() : '',
+      ),
+    ).pipe(
+      switchMap((cwd) =>
+        cwd ? from(this.store.domainFiles(cwd)).pipe(catchError(() => of([]))) : of([]),
+      ),
+    ),
+    { initialValue: [] as string[], equal: sameFiles },
+  );
+  /** The domain file picked, kept while the folder still has it. */
+  readonly domain = linkedSignal<string[], string>({
+    source: this.domainFiles,
+    computation: (files, prev) => (prev && files.includes(prev.value) ? prev.value : ''),
+  });
+
+  /** The projects with a tracker, whose board a Chat may borrow. */
+  readonly boardProjects = computed(() =>
+    (this.store.config()?.projects ?? []).filter((p) => p.tracker || p.ado),
+  );
+  /** The project picked for a Chat's board, kept while it still has one. */
+  readonly project = linkedSignal<ProjectConfig[], string>({
+    source: this.boardProjects,
+    computation: (projects, prev) =>
+      prev && projects.some((p) => p.id === prev.value) ? prev.value : '',
+  });
+
   readonly valid = computed(
     () =>
       this.name().trim().length > 0 &&
@@ -260,7 +326,14 @@ export class NewOrbitDialog {
     const model = this.model() || undefined;
     const lane: LaneConfig =
       this.kind() === 'chat'
-        ? { kind: 'chat', id, name, cwd, model }
+        ? {
+            kind: 'chat',
+            id,
+            name,
+            cwd,
+            model,
+            ...(this.project() ? { project: this.project() } : {}),
+          }
         : {
             kind: 'project',
             id,
@@ -270,6 +343,7 @@ export class NewOrbitDialog {
             kickoff: this.kickoff().trim() || 'Run the board.',
             ...newProjectBoard(this.store.config()?.projects ?? []),
             model,
+            ...(this.domain() ? { domain: this.domain() } : {}),
           };
     this.busy.set(true);
     this.error.set(null);
@@ -287,6 +361,9 @@ export class NewOrbitDialog {
     }
   }
 }
+
+const sameFiles = (a: string[], b: string[]) =>
+  a.length === b.length && a.every((f, i) => f === b[i]);
 
 function slug(name: string, taken: Set<string>): string {
   const base =

@@ -322,7 +322,10 @@ export function decisionTools(
         .max(4)
         .optional()
         .describe('Two to four short choices, the one you recommend first.'),
-      story: z.string().optional().describe('The ADO story number this decides, when there is one.'),
+      story: z
+        .string()
+        .optional()
+        .describe('The story id, as its tracker writes it, that this decides, when there is one.'),
     },
     async (args) => {
       const issues: Array<[string, string[]]> = [

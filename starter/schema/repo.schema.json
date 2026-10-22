@@ -1,0 +1,222 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Orbit repo profile",
+  "description": "The facts the orbit-starter skills read about a repo. A missing optional key means the step that needs it is skipped.",
+  "type": "object",
+  "required": ["baseBranch", "branchTemplate", "prefix", "worktree", "gates", "lanes", "consults"],
+  "additionalProperties": false,
+  "properties": {
+    "baseBranch": { "type": "string", "description": "The branch PRs target and worktrees start from." },
+    "branchTemplate": {
+      "type": "string",
+      "description": "Branch name pattern, e.g. {prefix}/{id}-{slug}."
+    },
+    "prefix": { "type": "string", "description": "Substituted for {prefix} in branchTemplate." },
+    "worktree": {
+      "type": "object",
+      "description": "How a fresh worktree is made runnable.",
+      "required": ["copy", "link"],
+      "additionalProperties": false,
+      "properties": {
+        "copy": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Gitignored files to copy from the main checkout."
+        },
+        "link": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Paths to share with the main checkout through a symlink or junction."
+        },
+        "install": { "type": "string", "description": "Command that installs dependencies." }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "description": "Commands that must pass before a PR opens, scoped to what changed where the tool can.",
+      "required": ["test"],
+      "additionalProperties": false,
+      "properties": {
+        "test": { "type": "string" },
+        "lint": { "type": "string" },
+        "format": { "type": "string" }
+      }
+    },
+    "serve": { "type": "string", "description": "How to run the app locally, when a lane needs it." },
+    "prLink": {
+      "type": "string",
+      "description": "How a PR names its story. Defaults by tracker kind: AB#{id} (ADO), {key} (Jira), Closes #{id} (GitHub Issues)."
+    },
+    "lanes": {
+      "type": "array",
+      "description": "Path globs to build-lane agents. Anything unmatched goes to orbit-starter:builder.",
+      "items": {
+        "type": "object",
+        "required": ["glob", "agent"],
+        "additionalProperties": false,
+        "properties": {
+          "glob": { "type": "string" },
+          "agent": { "type": "string", "description": "Agent name, e.g. orbit-starter:frontend." }
+        }
+      }
+    },
+    "consults": {
+      "type": "object",
+      "description": "Which consults run before a build. Each is optional.",
+      "additionalProperties": false,
+      "properties": {
+        "requirements": { "type": "boolean" },
+        "architect": { "type": "boolean" },
+        "ux": {
+          "description": "true turns it on and the story's triage decides whether it runs; an object adds a condition that forces it.",
+          "oneOf": [
+            { "type": "boolean" },
+            {
+              "type": "object",
+              "required": ["when"],
+              "additionalProperties": false,
+              "properties": { "when": { "type": "string" } }
+            }
+          ]
+        },
+        "integration": { "type": "string", "description": "Agent for the integration consult." },
+        "legacy": { "type": "string", "description": "Agent for the legacy-behaviour consult." },
+        "testData": { "type": "boolean" }
+      }
+    },
+    "maxOpenPrs": {
+      "type": "integer",
+      "default": 8,
+      "description": "Open-PR cap the engine reads from gh. Separate from Orbit's storyWipCap."
+    },
+    "merge": {
+      "type": "string",
+      "enum": ["ask", "auto", "never"],
+      "default": "ask",
+      "description": "What the monitor does with a PR that is approved and green."
+    },
+    "resolveThreads": {
+      "type": "string",
+      "enum": ["ask", "auto", "never"],
+      "default": "ask",
+      "description": "Whether review threads get resolved after a fix."
+    },
+    "runbook": {
+      "type": "string",
+      "description": "Path to a markdown file of repo facts: required checks, known flakes, reviewer team, false trails."
+    },
+    "qa": {
+      "type": "object",
+      "description": "Turns on orbit-starter:qa-tester. The harness, URLs, and login come from the runbook's QA section.",
+      "required": ["enabled"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "description": "true to allow QA passes." },
+        "deployWorkflow": {
+          "type": "string",
+          "description": "Name of the CI workflow that deploys the QA target. The deploy gate checks a green run of it at or after the merge commit. Absent means the runbook says how to prove a deploy."
+        },
+        "testStates": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Board column names that hold stories waiting on a QA pass, used when the user names no story."
+        }
+      }
+    },
+    "stack": {
+      "type": "object",
+      "description": "Turns on orbit-starter:stack, which cuts a feature built on one integration branch into stacked PRs.",
+      "required": ["enabled"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "description": "true to allow stacks." },
+        "graph": {
+          "type": "string",
+          "description": "\"nx\" for the built-in adapter, or a command that prints { nodes: { name: { root } }, dependencies: { name: [name] } } as JSON. Absent means slices are cut by layer paths alone."
+        },
+        "layers": {
+          "type": "array",
+          "description": "Slice layers, base first. A changed file lands in the first layer whose paths match; the rest land in an \"other\" slice.",
+          "items": {
+            "type": "object",
+            "required": ["id", "paths"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "paths": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "spine": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Shared files every slice touches, assigned key by key. Defaults to package.json and package-lock.json."
+        },
+        "verify": {
+          "type": "string",
+          "description": "Command that proves a slice builds alone; {base} is the ref it stacks on. Runs in the slice's own worktree. Absent means gates.lint and gates.test, which proves a build only if the test command compiles everything; set this to the build-and-test command otherwise."
+        },
+        "cutRoot": {
+          "type": "string",
+          "description": "Folder for the cutting worktrees. Defaults to .stack-cut beside the repo."
+        },
+        "maxPrsPerRun": { "type": "integer", "default": 3, "description": "PRs opened per materialize." }
+      }
+    },
+    "review": {
+      "type": "object",
+      "description": "Facts the review skills and agents read. Both members are optional.",
+      "additionalProperties": false,
+      "properties": {
+        "sizeBands": {
+          "type": "object",
+          "description": "Line counts review-bloat judges growth against. A missing key means the agent measures the repo's own distribution.",
+          "additionalProperties": false,
+          "properties": {
+            "fileNit": {
+              "type": "integer",
+              "description": "A file past this many lines is a nit. Usually the repo's 95th percentile."
+            },
+            "fileImportant": {
+              "type": "integer",
+              "description": "A file past this many lines is important. Usually the 99th percentile."
+            },
+            "fileGrowth": {
+              "type": "integer",
+              "description": "Lines added to a file already past fileNit before it is worth a split suggestion."
+            },
+            "functionNit": {
+              "type": "integer",
+              "description": "A function past this many lines is a nit. Defaults to 50."
+            },
+            "functionImportant": {
+              "type": "integer",
+              "description": "A function past this many lines is important. Defaults to 100."
+            }
+          }
+        },
+        "riskGlobs": {
+          "type": "array",
+          "description": "Extra path rules for risk-size.js, checked before its built-in globs. First match wins.",
+          "items": {
+            "type": "object",
+            "required": ["glob", "weight", "bucket"],
+            "additionalProperties": false,
+            "properties": {
+              "glob": { "type": "string", "description": "Supports **, *, ? and {a,b}." },
+              "weight": {
+                "type": "number",
+                "description": "Multiplier on changed lines. 0 means nobody reviews the file."
+              },
+              "bucket": {
+                "type": "string",
+                "description": "generated, test, docs, style, auth, contract, integration, state, server-logic, client, or other. The bucket picks the review agents."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

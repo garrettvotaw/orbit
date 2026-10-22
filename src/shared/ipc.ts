@@ -45,7 +45,10 @@ export type OrbitCommand =
 
 /** Round-trip requests that return data, unlike commands. */
 export type OrbitRequest =
-  { type: 'feed'; laneId: string; agentId: string | null } | { type: 'agents'; cwd: string } | { type: 'models' };
+  | { type: 'feed'; laneId: string; agentId: string | null }
+  | { type: 'agents'; cwd: string }
+  | { type: 'models' }
+  | { type: 'listDomainFiles'; cwd: string };
 
 export interface FeedResponse {
   entries: FeedEntry[];
@@ -58,7 +61,11 @@ export interface AgentsResponse {
 export interface ModelsResponse {
   models: ModelOption[];
 }
-export type OrbitResponse = FeedResponse | AgentsResponse | ModelsResponse;
+/** A folder's PM domain files, relative to it. */
+export interface DomainFilesResponse {
+  files: string[];
+}
+export type OrbitResponse = FeedResponse | AgentsResponse | ModelsResponse | DomainFilesResponse;
 
 export type OrbitEvent = { type: 'snapshot'; snapshot: Snapshot } | { type: 'config'; config: OrbitConfig };
 
@@ -73,6 +80,7 @@ export interface OrbitApi {
   request(req: { type: 'feed'; laneId: string; agentId: string | null }): Promise<FeedResponse>;
   request(req: { type: 'agents'; cwd: string }): Promise<AgentsResponse>;
   request(req: { type: 'models' }): Promise<ModelsResponse>;
+  request(req: { type: 'listDomainFiles'; cwd: string }): Promise<DomainFilesResponse>;
 }
 
 export const IPC = { event: 'orbit:event', command: 'orbit:command', request: 'orbit:request' } as const;

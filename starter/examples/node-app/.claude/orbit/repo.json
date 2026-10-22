@@ -1,0 +1,15 @@
+{
+  "baseBranch": "main",
+  "branchTemplate": "{prefix}/{id}-{slug}",
+  "prefix": "feat",
+  "worktree": {
+    "copy": [],
+    "link": [],
+    "install": "npm ci"
+  },
+  "gates": {
+    "test": "npm test"
+  },
+  "lanes": [{ "glob": "**", "agent": "orbit-starter:builder" }],
+  "consults": {}
+}

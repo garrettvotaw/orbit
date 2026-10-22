@@ -205,6 +205,11 @@ export class OrbitStore {
     return window.orbit.request({ type: 'agents', cwd });
   }
 
+  /** The PM domain files a folder has, relative to it. */
+  async domainFiles(cwd: string): Promise<string[]> {
+    return (await window.orbit.request({ type: 'listDomainFiles', cwd })).files;
+  }
+
   async refreshModels(): Promise<ModelOption[]> {
     const { models } = await window.orbit.request({ type: 'models' });
     this.models.set(models);

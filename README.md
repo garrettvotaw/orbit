@@ -8,8 +8,8 @@ terminals: every lane is a globe on the home row, its agents orbit it, and anyth
 Electron + Angular, with the Claude Agent SDK in the main process.
 
 **Status:** Windows today; macOS is in progress. Boards can live in Azure DevOps, Jira Cloud, or GitHub
-Issues. GitHub is the only code host. Orbit runs the agents and skills you already have in `~/.claude`; a
-generic starter set (a PM, a story agent, and the skills they use) is on the way.
+Issues. GitHub is the only code host. Orbit runs the agents and skills you already have in `~/.claude`, or
+the `orbit-starter` plugin in `starter/` (see [Starter](#starter)).
 
 ## Quick start
 
@@ -143,10 +143,27 @@ the first time. That token is encrypted with the OS keychain and kept in `orbit.
 PMs can work in different repos: each project's repo comes from its folder's remote, or from a `githubRepo` on
 the project, or from the top-level `githubRepo`. The galaxy, Reviews, and the PR watcher cover all of them.
 
-Every PM and story agent whose project has a tracker gets four tools from Orbit: `list_board`, `get_story`,
-`move_story` (to a stage; Orbit finds the column, and on Jira the transition), and `comment_on_story`. They
-work the same on every tracker. Orbit writes to a tracker only when an agent calls one of them, and
-`boardTools: false` in `config.json` hides them.
+Every PM and story agent whose project has a tracker gets the board tools from Orbit, and so does a chat
+that names that project in `project`. `list_board` and `get_story` read the board and one story in full:
+description, acceptance criteria, repro steps, parent, related stories, comments, and the names of its
+attachments. `get_attachment` hands back one of those files as an image the agent can see or text it can read.
+`move_story` moves a story to a stage and Orbit finds the column (on Jira, the transition); `column` names an
+exact column when a stage can't say which, and `assignToMe` assigns the story to whoever Orbit is signed in as.
+`comment_on_story` posts a comment, and with a `marker` it edits the comment it left before under that
+marker, so one plan or status comment stays current. `link_stories` links two stories as `duplicate`,
+`related`, or `blocks`, and `attach_to_story` uploads a file of up to 20 MB. GitHub has no typed links or
+issue attachments, so there `link_stories` leaves a comment naming the other issue (and closes a duplicate as
+one), and `attach_to_story` refuses. Orbit writes to a tracker only when an agent calls one of these, and
+`boardTools: false` in `config.json` hides them all.
+
+### Settings the starter reads
+
+A story moon runs the `orbit-starter:story-manager` agent, and its kickoff names the
+`orbit-starter:story-engine` skill; a review lane runs `/orbit-starter:review-pr`. Point them at your own
+with `storyAgent`, `storySkill`, and `reviewSkill` at the top of `config.json`. A project's `domain`
+names its PM domain file, relative to its folder (like `.claude/orbit/pm/storefront.md`), and its kickoff
+tells the PM to read it first; New orbit offers the files in the folder's `.claude/orbit/pm`. A chat's
+`project` lends it that project's board tools.
 
 ## Your agents
 
@@ -155,6 +172,63 @@ PM, and every lane is told how Orbit hears it. What Orbit adds to each session, 
 server: `needs_you`, `post_status`, and `withdraw_needs_you` for every lane; `report_board`, `start_story`,
 `ask_product_owner`, and the board tools for PMs; `claim_files` and `report_to_pm` for story agents. Lanes
 call you `userName` from the config, or the first part of your sign-in name.
+
+## Starter
+
+`starter/` is a Claude Code plugin, `orbit-starter`, with a generic PM, story agent, build lanes, and review
+flow, so a repo can run under Orbit without writing its own agents. The local marketplace is
+`.claude-plugin/marketplace.json`; it also allows the one dependency, the `superpowers` plugin from
+`claude-plugins-official`. Add both marketplaces and install:
+
+    claude plugin marketplace add anthropics/claude-plugins-official
+    claude plugin marketplace add <path to this repo>
+    claude plugin install orbit-starter@orbit
+
+A repo then writes two files, both committed:
+
+- `.claude/orbit/repo.json`, the repo profile: base branch, branch naming, what to copy or link into a new
+  worktree, the test/lint/format commands, which agent builds which paths, and which consults run.
+  `starter/docs/repo-profile.md` lists every key and `starter/schema/repo.schema.json` checks them.
+- `.claude/orbit/pm/<name>.md`, the PM's domain file: scope, vocabulary, and the traps a newcomer would hit.
+  The project's `domain` is that path, relative to the project's folder, and the PM reads the file first.
+
+Copy from `starter/examples/`. `node-app` is the small one; `nx-web-api` shows lanes, consults, and a runbook.
+
+`merge` in the profile is `ask`, `auto`, or `never`, default `ask`. With `ask`, an approved and green PR
+raises a `needs_you` question ("Merge #12?") and waits. `auto` merges on its own, `never` leaves it to you.
+`resolveThreads` takes the same three values for review threads.
+
+On the Orbit side, `storyAgent`, `storySkill`, and `reviewSkill` default to the `orbit-starter:` names, but a
+project's `agent` and a monitor's `skill` have no default. Name the starter's yourself, or the lane runs
+the default agent or a skill that isn't there:
+
+```json
+{
+  "projects": [
+    {
+      "id": "shop",
+      "name": "Storefront",
+      "agent": "orbit-starter:pm",
+      "cwd": "~/src/storefront",
+      "kickoff": "Run the board.",
+      "domain": ".claude/orbit/pm/storefront.md",
+      "tracker": { "kind": "github", "repo": "contoso/storefront", "project": 7 }
+    }
+  ],
+  "monitors": [
+    {
+      "id": "prs",
+      "name": "PR Monitor",
+      "skill": "orbit-starter:monitor-prs",
+      "cwd": "~/src/storefront",
+      "everyMinutes": 60,
+      "stateFile": "~/.claude/reports/pr-shepherd/state.json"
+    }
+  ]
+}
+```
+
+Code hosting is GitHub only.
 
 ## Tests
 

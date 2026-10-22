@@ -1,7 +1,7 @@
-import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, watch, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
-import type { LaneConfig, OrbitConfig, Theme } from '../shared/types.ts';
+import type { LaneConfig, OrbitConfig, ProjectConfig, Theme } from '../shared/types.ts';
 import { trackerOf, validateTracker } from './trackers/config.ts';
 
 export function expandHome(p: string): string {
@@ -14,13 +14,38 @@ export function defaultUserName(login: string): string {
   return first ? first.charAt(0).toUpperCase() + first.slice(1) : 'the user';
 }
 
+const DOMAIN_DIR = '.claude/orbit/pm';
+
+/** The PM domain files a folder has, as paths relative to it, sorted; none when it has none. */
+export function listDomainFiles(cwd: string): string[] {
+  const dir = path.join(cwd, DOMAIN_DIR);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isFile() && e.name.endsWith('.md'))
+    .map((e) => `${DOMAIN_DIR}/${e.name}`)
+    .sort();
+}
+
+/**
+ * Refuses a new project whose domain file isn't in its folder. Only New orbit asks: at load, a file
+ * gone after a branch switch in the PM's folder must not stop Orbit starting.
+ */
+export function checkDomain(p: Pick<ProjectConfig, 'id' | 'cwd' | 'domain'>): void {
+  if (p.domain && !existsSync(path.join(p.cwd, p.domain)))
+    throw new Error(`project "${p.id}" names a domain file that isn't in its folder: ${p.domain}`);
+}
+
 export function defaultConfigPath(): string {
   return path.join(homedir(), '.claude', 'orbit', 'config.json');
 }
 
 export function normalizeConfig(raw: Partial<OrbitConfig>): OrbitConfig {
   return {
-    projects: (raw.projects ?? []).map((p) => ({ ...p, cwd: expandHome(p.cwd) })),
+    projects: (raw.projects ?? []).map(({ domain, ...p }) => ({
+      ...p,
+      cwd: expandHome(p.cwd),
+      ...(domain?.trim() ? { domain: domain.trim() } : {}),
+    })),
     monitors: (raw.monitors ?? []).map((m) => ({ ...m, cwd: expandHome(m.cwd), stateFile: expandHome(m.stateFile) })),
     chats: (raw.chats ?? []).map((c) => ({ ...c, cwd: expandHome(c.cwd) })),
     morning: raw.morning ?? [],
@@ -37,6 +62,8 @@ export function normalizeConfig(raw: Partial<OrbitConfig>): OrbitConfig {
     ...(raw.storyWipCap ? { storyWipCap: raw.storyWipCap } : {}),
     ...(raw.storyModel ? { storyModel: raw.storyModel } : {}),
     ...(raw.storyAgent ? { storyAgent: raw.storyAgent } : {}),
+    ...(raw.storySkill ? { storySkill: raw.storySkill } : {}),
+    ...(raw.reviewSkill ? { reviewSkill: raw.reviewSkill } : {}),
     ...(typeof raw.testSlots === 'number' ? { testSlots: raw.testSlots } : {}),
     ...(typeof raw.memoryHoldGb === 'number' ? { memoryHoldGb: raw.memoryHoldGb } : {}),
     ...(typeof raw.memoryResumeGb === 'number' ? { memoryResumeGb: raw.memoryResumeGb } : {}),
@@ -54,6 +81,10 @@ export function validateConfig(cfg: OrbitConfig): void {
   for (const p of cfg.projects) {
     const t = trackerOf(p);
     if (t) validateTracker(t, p.id);
+  }
+  for (const c of cfg.chats) {
+    if (c.project && !cfg.projects.some((p) => p.id === c.project))
+      throw new Error(`config: chat "${c.id}" borrows the board of "${c.project}", which is not a project`);
   }
   for (const id of cfg.morning) {
     if (!seen.has(id)) throw new Error(`config: morning lane "${id}" is not a project, monitor, or chat`);

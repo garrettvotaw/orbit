@@ -4,17 +4,22 @@ import { AdoAdapter, type AdoClient } from './ado.ts';
 import { trackerOf } from './config.ts';
 import { GitHubIssuesAdapter } from './github-issues.ts';
 import { JiraAdapter, type JiraClient } from './jira.ts';
+import type { MarkerStore } from './markers.ts';
 import type { Tracker } from './tracker.ts';
 
-/** How each kind of tracker talks to its service: one ADO client, one Jira client per site, gh. */
+/**
+ * How each kind of tracker talks to its service: one ADO client, one Jira client per site, gh.
+ * `markers` remembers marked comments for ADO, which strips the hidden tag.
+ */
 export interface TrackerDeps {
   ado: AdoClient;
   jira: (site: string) => JiraClient;
   gh: GhRunner;
+  markers?: MarkerStore;
 }
 
 export function trackerFor(cfg: TrackerConfig, deps: TrackerDeps): Tracker {
-  if (cfg.kind === 'ado') return new AdoAdapter(cfg, deps.ado);
+  if (cfg.kind === 'ado') return new AdoAdapter(cfg, deps.ado, deps.markers?.for({ kind: 'ado', site: cfg.org }));
   if (cfg.kind === 'jira') return new JiraAdapter(cfg, deps.jira(cfg.site));
   return new GitHubIssuesAdapter(cfg, deps.gh);
 }

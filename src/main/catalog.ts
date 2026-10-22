@@ -50,9 +50,67 @@ function readAgentsDir(dir: string, source: AgentOption['source']): AgentOption[
     .map((f) => ({ ...parseAgentFile(f, readFileSync(path.join(dir, f), 'utf8')), source }));
 }
 
-/** Agents the CLI would see for a lane: the user's plus the project's, project winning on a name clash. */
+interface PluginInstall {
+  scope?: string;
+  projectPath?: string;
+  installPath?: string;
+}
+
+const readJson = (file: string): unknown => {
+  try {
+    return JSON.parse(readFileSync(file, 'utf8'));
+  } catch {
+    return null;
+  }
+};
+
+const samePath = (a: string, b: string) => {
+  const [x, y] = [path.resolve(a), path.resolve(b)];
+  return process.platform === 'win32' ? x.toLowerCase() === y.toLowerCase() : x === y;
+};
+
+/** The plugins settings turn off for this folder: the user's, then the project's, then its local file, the last to say winning. */
+function disabledPlugins(cwd: string, home: string): Set<string> {
+  const files = [
+    path.join(home, '.claude', 'settings.json'),
+    path.join(cwd, '.claude', 'settings.json'),
+    path.join(cwd, '.claude', 'settings.local.json'),
+  ];
+  const enabled: Record<string, unknown> = {};
+  for (const f of files) Object.assign(enabled, (readJson(f) as { enabledPlugins?: object } | null)?.enabledPlugins);
+  return new Set(Object.keys(enabled).filter((k) => enabled[k] === false));
+}
+
+/**
+ * Agents from the plugins installed for this folder, named `<plugin>:<agent>` the way Claude Code
+ * names them: user-scoped installs, and installs scoped to this folder, which win over the user's.
+ * A missing or broken manifest means none.
+ */
+function pluginAgents(cwd: string, home: string): AgentOption[] {
+  const manifest = readJson(path.join(home, '.claude', 'plugins', 'installed_plugins.json')) as {
+    plugins?: Record<string, PluginInstall[]>;
+  } | null;
+  const off = disabledPlugins(cwd, home);
+  const out: AgentOption[] = [];
+  for (const [key, installs] of Object.entries(manifest?.plugins ?? {})) {
+    if (off.has(key) || !Array.isArray(installs)) continue;
+    const here = installs.find((i) => i.projectPath && samePath(i.projectPath, cwd));
+    const install = here ?? installs.find((i) => i.scope === 'user');
+    if (!install?.installPath) continue;
+    const plugin = key.split('@')[0];
+    for (const a of readAgentsDir(path.join(install.installPath, 'agents'), 'plugin'))
+      out.push({ ...a, name: `${plugin}:${a.name}` });
+  }
+  return out;
+}
+
+/**
+ * Agents the CLI would see for a lane: installed plugins', the user's, and the project's, later
+ * ones winning on a name clash.
+ */
 export function listAgents(cwd: string, home = homedir()): AgentOption[] {
   const byName = new Map<string, AgentOption>();
+  for (const a of pluginAgents(cwd, home)) byName.set(a.name, a);
   for (const a of readAgentsDir(path.join(home, '.claude', 'agents'), 'user')) byName.set(a.name, a);
   for (const a of readAgentsDir(path.join(cwd, '.claude', 'agents'), 'project')) byName.set(a.name, a);
   return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));

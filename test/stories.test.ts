@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { z } from 'zod';
+import { boardTools, type BoardAccess } from '../src/main/board-tools.ts';
 import { openDb } from '../src/main/db.ts';
 import { orbitServer, decisionTools, DecisionStore } from '../src/main/decisions.ts';
 import {
@@ -23,6 +25,8 @@ import {
   wakeWaiting,
   type MoonHost,
 } from '../src/main/stories.ts';
+import { boardTool, laneTools, type LaneSink } from '../src/main/lane-tools.ts';
+import { STARTER } from '../src/main/starter.ts';
 import type { LaneStatus, StoryConfig } from '../src/shared/types.ts';
 
 const dir = mkdtempSync(path.join(tmpdir(), 'orbit-stories-'));
@@ -170,7 +174,9 @@ test('a PM can start stories up to its cap, not twice, and read them back; a fin
   const store = new StoryStore(openDb(':memory:'), { now: () => 5 });
   const host = fakeHost();
   const call = callerFor(
-    orbitServer(pmStoryTools(store, host, shop, { cap: 2, model: 'sonnet', agent: 'story-manager' })),
+    orbitServer(
+      pmStoryTools(store, host, shop, { cap: 2, model: 'sonnet', agent: 'story-manager', skill: 'story-engine' }),
+    ),
   );
 
   const first = await call('start_story', { storyId: '100203', title: 'Delivery question', brief: 'Traps: none.' });
@@ -184,7 +190,7 @@ test('a PM can start stories up to its cap, not twice, and read them back; a fin
   assert.equal(cfg.name, '100203 · Delivery question');
   assert.equal(cfg.agent, 'story-manager');
   assert.equal(cfg.model, 'sonnet');
-  assert.match(cfg.brief, /^You are the story manager for ADO story 100203: Delivery question\./);
+  assert.match(cfg.brief, /^You are the story manager for story 100203: Delivery question\./);
   assert.match(cfg.brief, /The PM's brief:\nTraps: none\.$/);
   assert.ok(host.live.has('story-shop-100203'), 'started');
 
@@ -227,7 +233,11 @@ function holdingHost() {
 test('start_story while held says held, not failed', async () => {
   const store = new StoryStore(openDb(':memory:'), { now: () => 5 });
   const host = holdingHost();
-  const call = callerFor(orbitServer(pmStoryTools(store, host, shop, { cap: 2, model: null, agent: 'story-manager' })));
+  const call = callerFor(
+    orbitServer(
+      pmStoryTools(store, host, shop, { cap: 2, model: null, agent: 'story-manager', skill: 'story-engine' }),
+    ),
+  );
   const res = await call('start_story', { storyId: '100203', title: 'Delivery question', brief: 'x' });
   assert.equal(res.isError, undefined);
   assert.match(
@@ -255,7 +265,11 @@ test('unstartedMoons finds stories that never got a session, so a restart can st
 test('story_status shows held for memory', async () => {
   const store = new StoryStore(openDb(':memory:'), { now: () => 5 });
   const host = holdingHost();
-  const call = callerFor(orbitServer(pmStoryTools(store, host, shop, { cap: 2, model: null, agent: 'story-manager' })));
+  const call = callerFor(
+    orbitServer(
+      pmStoryTools(store, host, shop, { cap: 2, model: null, agent: 'story-manager', skill: 'story-engine' }),
+    ),
+  );
   await call('start_story', { storyId: '100203', title: 'Delivery question', brief: 'x' });
   const status = await call('story_status', {});
   assert.equal(status.content[0].text, '100203 Delivery question — starting, held for memory');
@@ -355,7 +369,13 @@ test('storyConfig and the kickoff carry what the session needs', () => {
     parentName: shop.name,
     storyId: '1',
     title: 'One',
-    brief: storyKickoff({ storyId: '1', title: 'One', parentName: shop.name, brief: 'Trap: numbers are strings.' }),
+    brief: storyKickoff({
+      storyId: '1',
+      title: 'One',
+      parentName: shop.name,
+      brief: 'Trap: numbers are strings.',
+      skill: 'story-engine',
+    }),
     cwd: shop.cwd,
     agent: 'story-manager',
     model: null,
@@ -505,7 +525,11 @@ test('a refused claim parks the moon as waiting: it keeps what it holds, still c
     sentTo('shop')[0],
     /^Story 2 is waiting on 1: Story 2\nStory 1 holds libs\/a\/y\.ts\. Orbit wakes it with the files claimed when they are free; do not start_story it\. It still counts toward your stories in flight\.$/,
   );
-  const pm = callerFor(orbitServer(pmStoryTools(store, host, shop, { cap: 4, model: null, agent: 'story-manager' })));
+  const pm = callerFor(
+    orbitServer(
+      pmStoryTools(store, host, shop, { cap: 4, model: null, agent: 'story-manager', skill: 'story-engine' }),
+    ),
+  );
   assert.match((await pm('story_status', {})).content[0].text, /^2 Story 2 — waiting on 1, not running/m);
 });
 
@@ -586,7 +610,11 @@ test('a waiting moon stopped by a restart is resumed on its own session when it 
 test('starting a finished story again reuses its moon: a live one gets the new brief, a stopped one resumes, and a moon that will not come up is an error', async () => {
   const store = new StoryStore(openDb(':memory:'), { now: () => 5 });
   const host = fakeHost();
-  const call = callerFor(orbitServer(pmStoryTools(store, host, shop, { cap: 2, model: null, agent: 'story-manager' })));
+  const call = callerFor(
+    orbitServer(
+      pmStoryTools(store, host, shop, { cap: 2, model: null, agent: 'story-manager', skill: 'story-engine' }),
+    ),
+  );
   const id = 'story-shop-100203';
   await call('start_story', { storyId: '100203', title: 'Delivery question', brief: 'first' });
   // It reported blocked and sits idle with its session open.
@@ -633,7 +661,11 @@ test('starting a finished story again reuses its moon: a live one gets the new b
 test('a PM tells a story in flight something: a live moon hears it, a stopped one resumes first, a finished one is refused', async () => {
   const store = new StoryStore(openDb(':memory:'), { now: () => 5 });
   const host = fakeHost();
-  const call = callerFor(orbitServer(pmStoryTools(store, host, shop, { cap: 2, model: null, agent: 'story-manager' })));
+  const call = callerFor(
+    orbitServer(
+      pmStoryTools(store, host, shop, { cap: 2, model: null, agent: 'story-manager', skill: 'story-engine' }),
+    ),
+  );
   const id = 'story-shop-100129';
   const toMoon = () => host.sent.filter((s) => s.laneId === id).map((s) => s.text);
   await call('start_story', { storyId: '100129', title: 'Email the cart form', brief: 'x' });
@@ -675,7 +707,9 @@ test('a PM tells a story in flight something: a live moon hears it, a stopped on
   assert.match(unknown.content[0].text, /^Story 1 is not on one of your moons/);
   const cart = { id: 'cas', name: 'Cart', cwd: shop.cwd };
   const other = callerFor(
-    orbitServer(pmStoryTools(store, host, cart, { cap: 2, model: null, agent: 'story-manager' })),
+    orbitServer(
+      pmStoryTools(store, host, cart, { cap: 2, model: null, agent: 'story-manager', skill: 'story-engine' }),
+    ),
   );
   assert.equal((await other('tell_story', { storyId: '100129', message: 'Hi.' })).isError, true, "another PM's moon");
 
@@ -735,4 +769,48 @@ test('a database from before waiting moons gains the columns with nothing waitin
   const rec = new StoryStore(openDb(file)).get('story-shop-1')!;
   assert.deepEqual(rec.waitingOn, []);
   assert.deepEqual(rec.waitingFiles, []);
+});
+
+test('the story kickoff names the configured skill and never says ADO', () => {
+  const k = storyKickoff({
+    storyId: 'ACME-12',
+    title: 'Saved cards',
+    parentName: 'Storefront',
+    brief: 'Traps: none.',
+    skill: 'my-plugin:story-engine',
+  });
+  assert.match(k, /^You are the story manager for story ACME-12: Saved cards\./);
+  assert.match(k, /Run the my-plugin:story-engine skill\./);
+  assert.doesNotMatch(k, /\bADO\b/);
+});
+
+test('start_story kicks the moon off with the skill its PM tools were given', async () => {
+  const store = new StoryStore(openDb(':memory:'), { now: () => 5 });
+  const host = fakeHost();
+  const opts = { cap: 2, model: null, agent: STARTER.storyAgent, skill: STARTER.storySkill };
+  const call = callerFor(orbitServer(pmStoryTools(store, host, shop, opts)));
+  await call('start_story', { storyId: '45', title: 'Saved cards', brief: 'Traps: none.' });
+  assert.equal(host.added[0].agent, 'orbit-starter:story-manager');
+  assert.match(host.added[0].brief, /Run the orbit-starter:story-engine skill\./);
+});
+
+test('no tool a project or story lane gets says ADO', () => {
+  const sink = {} as LaneSink;
+  const store = new StoryStore(openDb(':memory:'));
+  const decisions = new DecisionStore(openDb(':memory:'));
+  const access: BoardAccess = { tracker: () => null, board: () => null, refresh: async () => {} };
+  const opts = { cap: 2, model: null, agent: STARTER.storyAgent, skill: STARTER.storySkill };
+  const tools = [
+    ...laneTools(sink, { id: 'shop' }),
+    boardTool(sink, { id: 'shop' }),
+    ...decisionTools(decisions, { id: 'shop', name: 'Storefront' }),
+    ...boardTools(access, { projectId: 'shop' }),
+    ...pmStoryTools(store, fakeHost(), shop, opts),
+    ...moonTools(store, fakeHost(), { id: 'story-shop-45' }),
+  ] as Array<{ name: string; description: string; inputSchema: z.ZodRawShape }>;
+  assert.ok(tools.length > 10, `${tools.length} tools`);
+  for (const t of tools) {
+    const schema = JSON.stringify(z.toJSONSchema(z.object(t.inputSchema), { unrepresentable: 'any' }));
+    assert.doesNotMatch(`${t.description} ${schema}`, /\bADO\b/, t.name);
+  }
 });
